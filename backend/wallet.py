@@ -60,3 +60,5 @@ class Wallet:
         Add a transaction to the wallet
         """
         self.transactions.append(transaction)
+
+    
