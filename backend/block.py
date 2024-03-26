@@ -1,5 +1,5 @@
 from time import time
-import hashlib
+import hashlib # maybe change to Crypto.Hash instead
 import json
 
 class Block(object):
@@ -11,17 +11,15 @@ class Block(object):
     - validator: the public key of the block's validator
     - current_hash: the hash of the block
     - previous_hash: the hash of the previous block
-    - capacity: how many transactions fit inside the block
     """
 
-    def __init__(self, index, timestamp, transactions, validator, previous_hash, capacity):
+    def __init__(self, index, previous_hash):
         self.index = index
-        self.timestamp = timestamp
-        self.transactions = transactions
-        self.validator = validator
+        self.timestamp = time()
+        self.transactions = []
+        self.validator = None
         self.previous_hash = previous_hash
-        self.capacity = capacity
-        self.current_hash = self.calculate_hash()
+        self.current_hash = None
 
     def add_transaction(self, transaction):
         """Add a transaction to the block"""
@@ -32,12 +30,12 @@ class Block(object):
             return False
 
     def calculate_hash(self):
+        """Calculate the hash of the block"""
         block_string = json.dumps({
             'index': self.index,
             'timestamp': self.timestamp,
             'transactions': self.transactions,
             'validator': self.validator,
             'previous_hash': self.previous_hash,
-            'capacity': self.capacity
         }, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
