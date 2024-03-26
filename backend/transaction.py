@@ -18,16 +18,19 @@ class Transaction:
     def __init__(self, sender_adress, receiver_adress, type_of_transaction, amount, message, nonce, transaction_id, Signature):
         self.sender_adress = sender_adress
         self.receiver_adress = receiver_adress
-        self.type_of_transaction = type_of_transaction
-        self.amount = amount
-        self.message = message
         self.nonce = nonce
         self.transaction_id = transaction_id
         self.Signature = Signature
-
+        self.type_of_transaction = type_of_transaction
         if self.type_of_transaction == 'coins':
-            self.amount = int(amount)
-        else:
-            self.amount = int(len(message))
+            self.amount = amount
+            self.message = None
+        elif self.type_of_transaction == 'message':
+            self.message = message
+            self.amount = None
+
+        
+
+        
 
         
