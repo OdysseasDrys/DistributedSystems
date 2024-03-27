@@ -6,10 +6,13 @@ class Blockchain:
     """
 
     def __init__(self):
+        """Initiliazes the blockchain"""
         self.blocks = []
 
     def __str__(self):
+        """Returns a string representation of the blockchain"""
         return str(self.__class__) + ": " + str(self.__dict__)
 
     def add_block(self, block):
+        """Adds a block to the blockchain"""
         self.blocks.append(block)

@@ -11,15 +11,17 @@ class Block(object):
     - validator: the public key of the block's validator
     - current_hash: the hash of the block
     - previous_hash: the hash of the previous block
+    - capacity: the capacity of the block
     """
 
-    def __init__(self, index, previous_hash):
+    def __init__(self, index, previous_hash, capacity):
         self.index = index
         self.timestamp = time()
         self.transactions = []
         self.validator = None
         self.previous_hash = previous_hash
         self.current_hash = None
+        self.capacity = capacity
 
     def add_transaction(self, transaction):
         """Add a transaction to the block"""

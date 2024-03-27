@@ -18,14 +18,14 @@ from json import JSONEncoder
 class Wallet:
     """
     The wallet of a node in the network.
-    It contains:
-     the public key of the node 
-     the private key of the node
+     public key: the public key of the node. Serves as the adress of the node.
+     private key: the private key of the node. Serves to sign transactions.
      the transactions of the node   
 
     """
 
     def __init__(self):
+        """Intialize the wallet"""
         random_gen = Crypto.Random.new().read
         private_key = RSA.generate(1024, random_gen)
         public_key = private_key.publickey()
