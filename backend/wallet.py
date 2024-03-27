@@ -20,7 +20,7 @@ class Wallet:
     The wallet of a node in the network.
      public key: the public key of the node. Serves as the adress of the node.
      private key: the private key of the node. Serves to sign transactions.
-     the transactions of the node   
+     transactions: the transactions of the node   
 
     """
 
