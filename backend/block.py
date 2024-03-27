@@ -22,6 +22,7 @@ class Block(object):
         self.previous_hash = previous_hash
         self.current_hash = None
         self.capacity = capacity
+        self.fees = 0
 
     def add_transaction(self, transaction):
         """Add a transaction to the block"""
