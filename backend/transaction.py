@@ -29,6 +29,14 @@ class Transaction:
             self.message = message
             self.amount = None
 
+    def sign_transaction(self, private_key):
+        """
+        Sign the transaction with the private key
+        """
+        self.Signature = private_key.sign(self.transaction_id, 'SHA-256')
+
+    
+
         
 
         
