@@ -17,7 +17,7 @@ class Transaction:
     - Signature: the signature of the transaction, proof that the holder of the wallet created the transaction
     """
 
-    def __init__(self, sender_adress, receiver_adress, type_of_transaction, amount, message, nonce, transaction_id, Signature=None):
+    def __init__(self, sender_adress, receiver_adress, type_of_transaction, amount, message, nonce, Signature=None):
         self.sender_adress = sender_adress
         self.receiver_adress = receiver_adress
         self.nonce = nonce

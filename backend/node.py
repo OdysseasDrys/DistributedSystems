@@ -10,7 +10,7 @@ class Node:
     Attributes:
         id (int): the id of the node.
         balance (int): the bcc coins of the node.
-        wallet (Wallet): the wallet of the node.
+        wallet (Wallet): the wallet of the node. 
         blockchain (Blockchain): the blockchain of the node.
         current_block (Block): the block that the node is fills with transactions.
         capacity (int): max number of transactions in each block.
@@ -48,9 +48,12 @@ class Node:
             if type_of_transaction == 'coins':
                 fee = 0.03*amount
                 if (self.balance >= (amount+fee)):
-                    transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, nonce, transaction_id)
+                    transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, nonce)
                     self.block.fees += fee
                     self.balance -= fee+amount
+                    transaction.sign_transaction(self.wallet.private_key)
+
+
     def get_transaction(self , transaction = None): 
         """Get a transaction from the node's wallet."""
         return self.wallet.get_transaction(transaction)
