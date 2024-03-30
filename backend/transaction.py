@@ -1,6 +1,8 @@
-
-
-
+import Crypto
+import Crypto.Random
+from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
+from Crypto.Signature import pss
 
 class Transaction:
     """
@@ -15,12 +17,12 @@ class Transaction:
     - Signature: the signature of the transaction, proof that the holder of the wallet created the transaction
     """
 
-    def __init__(self, sender_adress, receiver_adress, type_of_transaction, amount, message, nonce, transaction_id, Signature):
+    def __init__(self, sender_adress, receiver_adress, type_of_transaction, amount, message, nonce, transaction_id, Signature=None):
         self.sender_adress = sender_adress
         self.receiver_adress = receiver_adress
         self.nonce = nonce
-        self.transaction_id = transaction_id
-        self.Signature = Signature
+        self.transaction_id = self.get_hash()
+        self.Signature = None
         self.type_of_transaction = type_of_transaction
         if self.type_of_transaction == 'coins':
             self.amount = amount
@@ -30,12 +32,18 @@ class Transaction:
             self.amount = None
 
     def sign_transaction(self, private_key):
-        """
-        Sign the transaction with the private key
-        """
-        self.Signature = private_key.sign(self.transaction_id, 'SHA-256')
+        """Sign the current transaction with the given private key."""
 
-    
+        message = self.transaction_id.encode("ISO-8859-1")
+        key = RSA.importKey(private_key.encode("ISO-8859-1"))
+        h = SHA256.new(message)
+        signer = pss.new(key)
+        self.Signature = signer.sign(h).decode('ISO-8859-1')
+
+    def get_hash(self):
+        """Computes the hash of the transaction."""
+
+        return Crypto.Random.get_random_bytes(128).decode("ISO-8859-1")
 
         
 
