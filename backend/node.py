@@ -48,8 +48,9 @@ class Node:
             if type_of_transaction == 'coins':
                 fee = 0.03*amount
                 if (self.balance >= (amount+fee)):
-                    transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount,None, nonce, transaction_id, self.wallet.private_key)
-        
+                    transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, nonce, transaction_id, self.wallet.private_key)
+                    self.block.fees += fee
+                    self.balance -= fee+amount
     def get_transaction(self , transaction = None): 
         """Get a transaction from the node's wallet."""
         return self.wallet.get_transaction(transaction)

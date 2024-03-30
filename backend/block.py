@@ -12,6 +12,7 @@ class Block(object):
     - current_hash: the hash of the block
     - previous_hash: the hash of the previous block
     - capacity: the capacity of the block
+    - fees: the fees of the block
     """
 
     def __init__(self, index, previous_hash, capacity):
