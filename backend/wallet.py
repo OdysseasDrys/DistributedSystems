@@ -29,6 +29,7 @@ class Wallet:
         random_gen = Crypto.Random.new().read
         private_key = RSA.generate(1024, random_gen)
         public_key = private_key.publickey()
+        self.nonce = 0
 
         # Save keys as hex strings
         self.private_key = binascii.hexlify(private_key.export_key(format='DER')).decode('ascii')

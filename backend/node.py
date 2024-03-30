@@ -2,6 +2,8 @@ from blockchain import Blockchain
 from block import Block
 from wallet import Wallet
 from transaction import Transaction
+import requests
+import pickle
 
 class Node:
     """
@@ -48,10 +50,30 @@ class Node:
             if type_of_transaction == 'coins':
                 fee = 0.03*amount
                 if (self.balance >= (amount+fee)):
-                    transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, nonce)
+                    self.wallet.nonce += 1
+                    transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, self.wallet.nonce)
                     self.block.fees += fee
                     self.balance -= fee+amount
-                    transaction.sign_transaction(self.wallet.private_key)
+            if type_of_transaction == 'message':
+                amount = len(message)
+                fee = 0.03*amount
+                if (self.balance >= (amount+fee)):
+                    transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, None, message, self.wallet.nonce)
+                    self.block.fees += fee
+                    self.balance -= fee+amount
+                
+                transaction.sign_transaction(self.wallet.private_key)
+
+            if self.broadcast_transaction(transaction):
+                return True
+            else:
+                return False
+                    
+
+
+           
+                    
+
 
 
     def get_transaction(self , transaction = None): 
@@ -68,4 +90,19 @@ class Node:
             print("Not enough BCC")
             return False
 
-        
+    def broadcast_transaction(self, transaction):
+
+        for node in self.state:
+            try:
+                r = requests.post(f'{h}/{api}/', message, **kwargs)
+
+            # cant do too much
+                if r.status_code != 200:
+                    print(f'broadcast: Request "{h}/{api}" failed')
+
+            except requests.exceptions.Timeout:
+                print(f'broadcast: Request "{h}/{api}" timed out')
+                pass
+
+
+
