@@ -94,15 +94,18 @@ class Node:
 
         for node in self.state:
             try:
-                r = requests.post(f'{h}/{api}/', message, **kwargs)
-
-            # cant do too much
-                if r.status_code != 200:
-                    print(f'broadcast: Request "{h}/{api}" failed')
+                address = 'http://' + node['ip'] + ':' + node['port']
+                response = requests.post(address + '/validate_transaction',
+                                         data=pickle.dumps(transaction))
+                if response.status_code != 200:
+                    print(f'broadcast: Request "{node['ip']}/{node['port']}" failed')
 
             except requests.exceptions.Timeout:
-                print(f'broadcast: Request "{h}/{api}" timed out')
+                print(f'broadcast: Request "{node['ip']}/{node['port']}" timed out')
                 pass
 
+        self.add_transaction_to_block(transaction)
+        return True
 
-
+    def add_transaction_to_block(transaction):
+        
