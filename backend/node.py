@@ -42,7 +42,7 @@ class Node:
         """Generate a wallet for the node."""
         self.wallet= Wallet()
     
-    def create_transaction(self, receiver_adress, type_of_transaction, amount, message):
+    def create_transaction (self, receiver_adress, type_of_transaction, amount, message, nonce):
         """Create a transaction for the node."""
         if receiver_adress != 0:
             if type_of_transaction == 'coins':
@@ -50,7 +50,7 @@ class Node:
                 if (self.balance >= (amount+fee)):
                     transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, nonce, transaction_id, self.wallet.private_key)
                     self.block.fees += fee
-                    self.balance -= fee+amount
+                    self.balance -= fee + amount
     def get_transaction(self , transaction = None): 
         """Get a transaction from the node's wallet."""
         return self.wallet.get_transaction(transaction)
