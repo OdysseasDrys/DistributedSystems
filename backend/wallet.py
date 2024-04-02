@@ -20,7 +20,7 @@ class Wallet:
     The wallet of a node in the network.
      public key: the public key of the node. Serves as the adress of the node.
      private key: the private key of the node. Serves to sign transactions.
-     transactions: the transactions of the node   
+     transactions: the transactions of the node
 
     """
 
@@ -61,5 +61,26 @@ class Wallet:
         Add a transaction to the wallet
         """
         self.transactions.append(transaction)
-
     
+    
+    def get_stake_balance(self):
+        """
+        Get the stake balance of the wallet
+        """
+        stake_balance = 0
+        for transaction in self.transactions:
+            if transaction.receiver_address == 0:
+                stake_balance = 0
+                stake_balance += transaction.amount
+        return abs(stake_balance)
+    
+    def get_balance(self):
+        """
+        Get the balance of the wallet
+        """
+        balance = 0
+        staked_balance = self.get_stake_balance()
+        for transaction in self.transactions:
+            if transaction.sender_address != 0:
+                balance += transaction.amount
+        return balance - abs(staked_balance)

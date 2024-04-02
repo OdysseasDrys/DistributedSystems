@@ -43,3 +43,5 @@ class Block(object):
             'previous_hash': self.previous_hash,
         }, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
+
+    

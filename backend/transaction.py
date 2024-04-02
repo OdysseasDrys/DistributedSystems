@@ -45,8 +45,14 @@ class Transaction:
 
         return Crypto.Random.get_random_bytes(128).decode("ISO-8859-1")
 
-        
+    def verify_signature(self):
+        """Verifies the signature of a transaction."""
 
-        
-
-        
+        key = RSA.importKey(self.sender_address.encode('ISO-8859-1'))
+        h = SHA256.new(self.transaction_id.encode('ISO-8859-1'))
+        verifier = pss.new(key)
+        try:
+            verifier.verify(h, self.signature.encode('ISO-8859-1'))
+            return True
+        except (ValueError, TypeError):
+            return False       
