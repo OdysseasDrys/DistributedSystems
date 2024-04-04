@@ -63,6 +63,7 @@ if __name__ == '__main__':
         """
 
         node.id = 0
+        
         node.state.append([
             node.id, BOOTSTRAP_IP, BOOTSTRAP_PORT, node.wallet.public_key, 1000 * endpoints.n, 0])
 
@@ -73,11 +74,11 @@ if __name__ == '__main__':
         # Adds the first and only transaction in the genesis block.
         first_transaction = Transaction(sender_adress="0", receiver_adress="0", type_of_transaction="coins", amount=1000*endpoints.n, message=None, nonce=0, Signature=None)
         genesis_block.transactions.append(first_transaction)
-        genesis_block.current_hash = genesis_block.get_hash()
+        genesis_block.current_hash = genesis_block.calculate_hash()
         node.wallet.transactions.append(first_transaction)
 
         # Add the genesis block in the chain.
-        node.chain.blocks.append(genesis_block)
+        node.blockchain.blocks.append(genesis_block)
         node.current_block = None
 
         # Listen in the specified address (ip:port)

@@ -1,6 +1,7 @@
 from time import time
 import hashlib # maybe change to Crypto.Hash instead
 import json
+import pickle
 
 class Block(object):
     """
@@ -35,13 +36,13 @@ class Block(object):
 
     def calculate_hash(self):
         """Calculate the hash of the block"""
-        block_string = json.dumps({
+        block_dict = {
             'index': self.index,
             'timestamp': self.timestamp,
             'transactions': self.transactions,
             'validator': self.validator,
             'previous_hash': self.previous_hash,
-        }, sort_keys=True).encode()
-        return hashlib.sha256(block_string).hexdigest()
-
+        }
+        sorted_block_string = pickle.dumps(block_dict, protocol=0)
+        return hashlib.sha256(sorted_block_string).hexdigest()
     
