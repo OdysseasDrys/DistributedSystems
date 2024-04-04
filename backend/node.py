@@ -45,6 +45,18 @@ class Node:
         """Generate a wallet for the node."""
         self.wallet= Wallet()
     
+    def create_new_block(self):
+        """Creates a new block for the blockchain."""
+        if len(self.blockchain.blocks) == 0:
+            index = 0
+            previous_hash = 1
+            self.current_block = Block(index, previous_hash, self.capacity)
+        else:
+            index = len(self.blockchain.blocks) + 1
+            previous_hash= self.blockchain.blocks[-1].calculate_hash()
+            self.current_block = Block(index, previous_hash, self.capacity)
+        return self.current_block
+
     def create_transaction(self, receiver_adress, type_of_transaction, amount, message):
         """Create a transaction for the node."""
         if receiver_adress != 0:
