@@ -29,10 +29,10 @@ rest_api = Blueprint('rest_api', __name__)
 #         # If the block is valid:
 #         # - Add block to the current blockchain.
 #         # - Remove the new_block's transactions from the unconfirmed_blocks of the node.
-#         # Update previous hash and index in case of insertions in the chain
+#         # Update previous hash and index in case of insertions in the blockchain
 #         node.stop_mining = True
 #         with node.filter_lock:
-#             node.chain.blocks.append(new_block)
+#             node.blockchain.blocks.append(new_block)
 #             node.chain_lock.release()
 #             node.filter_blocks(new_block)
 #             node.stop_mining = False
@@ -48,7 +48,7 @@ rest_api = Blueprint('rest_api', __name__)
 #                 # Add block to the current blockchain
 #                 node.stop_mining = True
 #                 with node.filter_lock:
-#                     node.chain.blocks.append(new_block)
+#                     node.blockchain.blocks.append(new_block)
 #                     node.chain_lock.release()
 #                     # Remove the new_block's transactions from the unconfirmed_blocks of the node.
 #                     node.filter_blocks(new_block)
@@ -120,11 +120,11 @@ def get_chain():
     '''Endpoint that gets a blockchain.
 
         Input:
-            chain: the blockchain in pickle format.
+            blockchain: the blockchain in pickle format.
         Returns:
             message: the outcome of the procedure.
     '''
-    node.chain = pickle.loads(request.get_data())
+    node.blockchain = pickle.loads(request.get_data())
     return jsonify({'message': "OK"})
 
 
@@ -135,7 +135,7 @@ def send_chain():
         Returns:
             the blockchain of the node in pickle format.
     '''
-    return pickle.dumps(node.chain)
+    return pickle.dumps(node.blockchain)
 
 
 ##############################################################
@@ -199,7 +199,11 @@ def get_transactions():
         Returns:
             a formatted list of transactions in pickle format.
     '''
-    return pickle.dumps([transaction.to_list() for transaction in node.blockchain.blocks[-1].transactions])
+    if len(node.blockchain.blocks[-1].transactions)==0:
+        return jsonify({'message': 'There are no transactions in the last block.'}), 400
+    else:
+        return pickle.dumps([transaction.to_list() for transaction in node.blockchain.blocks[-1].transactions])
+        return jsonify(len(node.blockchain.blocks[-1].transactions)) # comment the above to see the number of transactions in the last block
 
 
 @rest_api.route('/api/get_my_transactions', methods=['GET'])
@@ -209,7 +213,11 @@ def get_my_transactions():
         Returns:
             a formatted list of transactions in pickle format.
     '''
-    return pickle.dumps([transaction.to_list() for transaction in node.wallet.transactions])
+    if len(node.wallet.transactions)==0:
+        return jsonify({'message': 'There are no transactions in the wallet.'}), 400
+    else:
+        return pickle.dumps([transaction.to_list() for transaction in node.wallet.transactions])
+        return jsonify(len(node.wallet.transactions)) # comment the above to see the number of transactions in the wallet
 
 
 @rest_api.route('/api/get_id', methods=['GET'])

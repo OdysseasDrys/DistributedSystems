@@ -59,7 +59,7 @@ class Transaction:
         
     def to_list(self):
         """Converts a Transaction object into a list."""
-        if self.type_of_transaction is "coins":
+        if self.type_of_transaction == "coins":
             return [self.sender_address, self.receiver_address, self.type_of_transaction, self.amount]
         else:
             return [self.sender_address, self.receiver_address, self.type_of_transaction, self.message]

@@ -125,7 +125,29 @@ class Node:
                 print(f'broadcast: Request "{node["ip"]}/{node["port"]}" timed out')
                 pass
 
-        self.add_transaction_to_block(transaction)
+
+        
+
+        validator = self.add_transaction_to_block(transaction)
+        if self.id == validator:
+            # validate the block based on the starting state and broadcast
+
+
+            # stateb = self.current_block.starting_state
+            # for transaction in self.current_block.transactions:
+            #     if transaction.type_of_transaction == "coins":
+            #         if transaction.sender_address == stateb.adrress
+            #     else: 
+            #         ???
+
+            # if the block is valid, compute the hash of the block, get the fees and add it to the blockchain
+
+            # if the block is not valid, remove it from the blockchain
+
+            # create the new block
+            self.create_new_block()
+            self.current_block.state = self.state
+        
         
         return True
 
@@ -191,3 +213,6 @@ class Node:
                 sum += stakes[i]
                 if number <= sum:
                     return self.state[i]['id']
+                
+            # 0-----------10-----15-----20-----25
+            # 12
