@@ -62,7 +62,7 @@ if __name__ == '__main__':
             - adds the genesis block in the blockchain (no validation).
             - starts listening in the desired port.
         """
-
+    
         node.id = 0
         
         node.state.append([

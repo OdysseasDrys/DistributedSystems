@@ -5,22 +5,12 @@ from flask import Blueprint, jsonify, request
 
 from node import Node
 
-###########################################################
-################## INITIALIZATIONS ########################
-###########################################################
-
-
-# Define the node object of the current node.
+#Initialize the node
 node = Node()
-# Define the number of nodes in the network.
 n = 0
-# Define a Blueprint for the api endpoints.
 rest_api = Blueprint('rest_api', __name__)
 
 
-###########################################################
-################## API/API COMMUNICATION ##################
-###########################################################
 
 
 # @rest_api.route('/get_block', methods=['POST'])
@@ -69,6 +59,10 @@ rest_api = Blueprint('rest_api', __name__)
 
 #     return jsonify({'message': "OK"})
 
+@rest_api.route('/', methods=['GET', 'POST'])
+def hello():
+    print("Hello")
+    return jsonify({'message': "OK"}), 200
 
 @rest_api.route('/validate_transaction', methods=['POST'])
 def validate_transaction():
@@ -205,7 +199,7 @@ def get_transactions():
         Returns:
             a formatted list of transactions in pickle format.
     '''
-    return pickle.dumps([tr.to_list() for tr in node.chain.blocks[-1].transactions])
+    return pickle.dumps([transaction.to_list() for transaction in node.blockchain.blocks[-1].transactions])
 
 
 @rest_api.route('/api/get_my_transactions', methods=['GET'])
@@ -215,7 +209,7 @@ def get_my_transactions():
         Returns:
             a formatted list of transactions in pickle format.
     '''
-    return pickle.dumps([tr.to_list() for tr in node.wallet.transactions])
+    return pickle.dumps([transaction.to_list() for transaction in node.wallet.transactions])
 
 
 @rest_api.route('/api/get_id', methods=['GET'])

@@ -18,8 +18,8 @@ class Transaction:
     """
 
     def __init__(self, sender_adress, receiver_adress, type_of_transaction, amount, message, nonce, Signature=None):
-        self.sender_adress = sender_adress
-        self.receiver_adress = receiver_adress
+        self.sender_address = sender_adress
+        self.receiver_address = receiver_adress
         self.nonce = nonce
         self.transaction_id = self.get_hash()
         self.Signature = None
@@ -56,3 +56,10 @@ class Transaction:
             return True
         except (ValueError, TypeError):
             return False       
+        
+    def to_list(self):
+        """Converts a Transaction object into a list."""
+        if self.type_of_transaction is "coins":
+            return [self.sender_address, self.receiver_address, self.type_of_transaction, self.amount]
+        else:
+            return [self.sender_address, self.receiver_address, self.type_of_transaction, self.message]
