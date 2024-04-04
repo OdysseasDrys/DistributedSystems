@@ -25,6 +25,7 @@ BOOTSTRAP_PORT = config.BOOTSTRAP_PORT
 
 # Define the flask environment and register the blueprint with the endpoints.
 app = Flask(__name__)
+app.config['DEBUG']=True
 app.register_blueprint(rest_api)
 CORS(app)
 
