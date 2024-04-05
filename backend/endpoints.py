@@ -1,6 +1,7 @@
 import pickle
 import node
-
+import jsonpickle
+    
 from flask import Blueprint, jsonify, request
 
 from node import Node
@@ -24,18 +25,17 @@ rest_api = Blueprint('rest_api', __name__)
 #             message: the outcome of the procedure.
 #     '''
 #     new_block = pickle.loads(request.get_data())
-#     node.chain_lock.acquire()
+#     
 #     if node.validate_block(new_block):
 #         # If the block is valid:
 #         # - Add block to the current blockchain.
 #         # - Remove the new_block's transactions from the unconfirmed_blocks of the node.
 #         # Update previous hash and index in case of insertions in the blockchain
-#         node.stop_mining = True
+#         
 #         with node.filter_lock:
 #             node.blockchain.blocks.append(new_block)
-#             node.chain_lock.release()
-#             node.filter_blocks(new_block)
-#             node.stop_mining = False
+#             
+#             
 #     else:
 #         # If the block is not valid, check if the signature is not authentic or
 #         # there is a conflict.
@@ -135,6 +135,7 @@ def send_chain():
         Returns:
             the blockchain of the node in pickle format.
     '''
+    return jsonpickle.encode(node.blockchain)
     return pickle.dumps(node.blockchain)
 
 
@@ -202,7 +203,8 @@ def get_transactions():
     if len(node.blockchain.blocks[-1].transactions)==0:
         return jsonify({'message': 'There are no transactions in the last block.'}), 400
     else:
-        return pickle.dumps([transaction.to_list() for transaction in node.blockchain.blocks[-1].transactions])
+        # return jsonpickle.encode(node.blockchain.blocks[-1].transactions)
+        return jsonpickle.encode([transaction.to_list() for transaction in node.blockchain.blocks[-1].transactions])
         return jsonify(len(node.blockchain.blocks[-1].transactions)) # comment the above to see the number of transactions in the last block
 
 
@@ -216,6 +218,7 @@ def get_my_transactions():
     if len(node.wallet.transactions)==0:
         return jsonify({'message': 'There are no transactions in the wallet.'}), 400
     else:
+        return jsonpickle.encode([transaction.to_list() for transaction in node.wallet.transactions])
         return pickle.dumps([transaction.to_list() for transaction in node.wallet.transactions])
         return jsonify(len(node.wallet.transactions)) # comment the above to see the number of transactions in the wallet
 

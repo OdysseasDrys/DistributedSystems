@@ -76,11 +76,16 @@ class Node:
                     self.wallet.nonce += 1
                 
         else: #in case it is a stake transaction 
-            if amount >= self.balance:
-                 self.wallet.nonce += 1
-                 transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, self.wallet.nonce)
-                 self.balance -= amount
-                 # also send stake to endpoint 
+            if amount > self.stake_amount:
+                self.wallet.nonce += 1
+                transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, self.wallet.nonce)
+                self.balance -= amount
+                
+            elif amount < self.stake_amount:
+                self.wallet.nonce += 1
+                transaction = Transaction(receiver_adress, self.wallet.public_key, type_of_transaction, amount, None, self.wallet.nonce)
+                self.balance -= amount
+                
 
         transaction.sign_transaction(self.wallet.private_key)
 
@@ -89,15 +94,16 @@ class Node:
         else:
             return False         
 
-
-
     def get_transaction(self , transaction = None): 
         """Get a transaction from the node's wallet."""
         return self.wallet.get_transaction(transaction)
     
     def stake(self, amount):
         """Set the node's stake."""
-        if self.balance() >= amount:
+        if self.stake_amount == amount:
+            print("Amount already staked")
+            return False
+        elif self.balance >= amount:
             self.create_transaction(self.wallet.public_key, 0, 'coins', amount, None)
             return True
         else:
@@ -125,31 +131,38 @@ class Node:
                 print(f'broadcast: Request "{node["ip"]}/{node["port"]}" timed out')
                 pass
 
-
-        
-
-        validator = self.add_transaction_to_block(transaction)
-        if self.id == validator:
-            # validate the block based on the starting state and broadcast
-
-
-            # stateb = self.current_block.starting_state
-            # for transaction in self.current_block.transactions:
-            #     if transaction.type_of_transaction == "coins":
-            #         if transaction.sender_address == stateb.adrress
-            #     else: 
-            #         ???
-
-            # if the block is valid, compute the hash of the block, get the fees and add it to the blockchain
-
-            # if the block is not valid, remove it from the blockchain
-
-            # create the new block
-            self.create_new_block()
-            self.current_block.state = self.state
-        
+        if not self.add_transaction_to_block(transaction):
+            validator = self.proof_of_stake()
+            self.validation_sequence(validator)  
         
         return True
+
+    def validation_sequence(self, validator):
+
+        self.state = self.calculate_state()
+        self.current_block.state = self.state
+
+        if self.id == validator:         
+            responses = []
+            # broadcasted = False
+            broadcasted = True
+            for node in self.state:
+                if node["id"]!=self.id:
+                    response = self.current_block.broadcast_block(node["ip"], node["port"])
+                    responses.append(response)
+            
+            for res in responses:
+                # if res == 200:
+                #     broadcasted = True  
+                if res != 200:
+                    broadcasted = False
+                    break          
+            if broadcasted:
+                self.balance += self.current_block.fees
+                self.blockchain.add_block(self.current_block)            
+                self.create_new_block()
+        
+        
 
     def validate_transaction(self, transaction):
         """Validates an incoming transaction.
@@ -171,7 +184,25 @@ class Node:
                 if node['balance'] >= full_amount:
                     return True
         return False
+    
+    def calculate_state(self):
+        """Validates the blockchain by checking all the transactions inside all the blocks"""
+        for block in self.blockchain:
+            for transaction in block.transactions:
+                for node in self.state:
+                    if transaction.type_of_transaction == "coins":
+                        if transaction.sender_address == node["public_key"]:
+                            node["balance"] -= 1.03*transaction.amount
+                        
+                        if transaction.receiver_address == node["public_key"]:
+                            node["balance"] += transaction.amount
+                    if transaction.type_of_transaction == "message":
+                        amount = len(transaction.message)
+                        if transaction.sender_address == node["public_key"]:
+                            node["balance"] -= amount
+        return self.state
 
+                        
 
     def add_transaction_to_block(self, transaction):
         
@@ -180,39 +211,34 @@ class Node:
              self.wallet.add_transaction(transaction)
 
         # Update the balance of the recipient and the sender.
-        for node in self.state:
-            if transaction.type_of_transaction == 'message':
-                fee = len(transaction.message)
+        if self.current_block.add_transaction(transaction):
+            for node in self.state:            
+                if transaction.type_of_transaction == 'message':
+                    fee = len(transaction.message)
+                    if node['public_key'] == transaction.sender_address:
+                        node['balance'] -= fee
+                        break
                 if node['public_key'] == transaction.sender_address:
-                    node['balance'] -= fee
-                    break
-            if node['public_key'] == transaction.sender_address:
-                node['balance'] -= transaction.amount
-                continue
-            if node['public_key'] == transaction.receiver_address:
-                node['balance'] += transaction.amount
-                continue
+                    node['balance'] -= transaction.amount
+                    continue
+                if node['public_key'] == transaction.receiver_address:
+                    node['balance'] += transaction.amount
+                    continue
+                return True
 
         if not self.current_block.add_transaction(transaction):
+           return False
+
+    def proof_of_stake(self):
             random.seed(self.current_block.previous_hash)
             stakes = [node['stake'] for node in self.state]
             total_stake = sum(stakes)
             if total_stake == 0:
                 return random.choice(self.state)['id']  # Fallback if no stakes are present
 
-            # stake_thresholds = [stake / total_stake for stake in stakes]
-            # rng_value = random.random()
-            # cumulative = 0
-            # for i, threshold in enumerate(stake_thresholds):
-            #     cumulative += threshold
-            #     if rng_value <= cumulative:
-            #         return self.state[i]['id']
             sum = 0
             number = random.randint(0,total_stake)
             for i in enumerate(stakes):
                 sum += stakes[i]
                 if number <= sum:
                     return self.state[i]['id']
-                
-            # 0-----------10-----15-----20-----25
-            # 12

@@ -69,7 +69,7 @@ class Wallet:
         """
         stake_balance = 0
         for transaction in self.transactions:
-            if transaction.receiver_address == 0:
+            if transaction.receiver_address == 0 and transaction.nonce != 0: # to avoid first transaction
                 stake_balance = 0
                 stake_balance += transaction.amount
         return abs(stake_balance)

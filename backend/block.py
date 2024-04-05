@@ -2,6 +2,8 @@ from time import time
 import hashlib # maybe change to Crypto.Hash instead
 import json
 import pickle
+import responses
+import requests
 
 class Block(object):
     """
@@ -46,4 +48,18 @@ class Block(object):
         }
         sorted_block_string = pickle.dumps(block_dict, protocol=0)
         return hashlib.sha256(sorted_block_string).hexdigest()
+    
+    def broadcast_block(self, ip, port):
+        block_data = {
+            'index': self.index,
+            'timestamp': self.timestamp,
+            'transactions': self.transactions,
+            'validator': self.validator,
+            'previous_hash': self.previous_hash,
+            'capacity': self.capacity,
+            'fees': self.fees
+        }
+        address = 'http://' + ip + ':' + port +'/get_block'
+        response = requests.post(address, json=block_data)
+        return response.status_code
     

@@ -31,27 +31,22 @@ CORS(app)
 
 
 if __name__ == '__main__':
-    # Define the argument parser.
-    # parser = ArgumentParser(description='Rest api of BCC.')
+    #Define the argument parser.
+    parser = ArgumentParser(description='Rest api of BCC.')
 
-    # required = parser.add_argument_group('required arguments')
-    # optional = parser.add_argument_group('optional_arguments')
+    required = parser.add_argument_group('required arguments')
+    optional = parser.add_argument_group('optional_arguments')
 
-    # required.add_argument(
-    #     '-p', type=int, help='port to listen on', required=True)
-    # required.add_argument(
-    #     '-n', type=int, help='number of nodes in the blockchain', required=True)
-    # required.add_argument('-capacity', type=int,
-    #                       help='capacity of a block', required=True)
-    # optional.add_argument('-bootstrap', action='store_true',
-    #                       help='set if the current node is the bootstrap')
+    
+    optional.add_argument('-bootstrap', action='store_true',
+                          help='set if the current node is the bootstrap')
 
-    # # Parse the given arguments.
-    # args = parser.parse_args()
+    # Parse the given arguments.
+    args = parser.parse_args()
     port = BOOTSTRAP_PORT
     endpoints.n = 5
     capacity = 5
-    is_bootstrap = True
+    is_bootstrap = args.bootstrap
 
     if (is_bootstrap):
         """
