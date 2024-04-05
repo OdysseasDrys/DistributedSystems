@@ -3,6 +3,10 @@ import Crypto.Random
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pss
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 
 class Transaction:
     """
@@ -21,9 +25,19 @@ class Transaction:
         self.sender_address = sender_adress
         self.receiver_address = receiver_adress
         self.nonce = nonce
+<<<<<<< Updated upstream
         self.transaction_id = self.get_hash()
         self.Signature = None
         self.type_of_transaction = type_of_transaction
+=======
+        if (transaction_id):
+            self.transaction_id = transaction_id
+        else:
+            self.transaction_id = self.get_hash()
+
+        self.Signature = Signature
+
+>>>>>>> Stashed changes
         if self.type_of_transaction == 'coins':
             self.amount = amount
             self.message = None
@@ -31,6 +45,17 @@ class Transaction:
             self.message = message
             self.amount = None
 
+<<<<<<< Updated upstream
+=======
+    def __str__(self):
+        """Returns a string representation of a Transaction object"""
+        return str(self.__class__) + ": " + str(self.__dict__)
+    
+    def get_hash(self):
+        """Computes the hash of the transaction."""
+        return Crypto.Random.get_random_bytes(128).decode("ISO-8859-1")
+    
+>>>>>>> Stashed changes
     def sign_transaction(self, private_key):
         """Sign the current transaction with the given private key."""
 
@@ -38,12 +63,16 @@ class Transaction:
         key = RSA.importKey(private_key.encode("ISO-8859-1"))
         h = SHA256.new(message)
         signer = pss.new(key)
+<<<<<<< Updated upstream
         self.Signature = signer.sign(h).decode('ISO-8859-1')
 
     def get_hash(self):
         """Computes the hash of the transaction."""
 
         return Crypto.Random.get_random_bytes(128).decode("ISO-8859-1")
+=======
+        self.signature = signer.sign(h).decode('ISO-8859-1')
+>>>>>>> Stashed changes
 
     def verify_signature(self):
         """Verifies the signature of a transaction."""
@@ -55,6 +84,7 @@ class Transaction:
             verifier.verify(h, self.signature.encode('ISO-8859-1'))
             return True
         except (ValueError, TypeError):
+<<<<<<< Updated upstream
             return False       
         
     def to_list(self):
@@ -63,3 +93,8 @@ class Transaction:
             return [self.sender_address, self.receiver_address, self.type_of_transaction, self.amount]
         else:
             return [self.sender_address, self.receiver_address, self.type_of_transaction, self.message]
+=======
+            return False
+
+        
+>>>>>>> Stashed changes
