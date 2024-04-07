@@ -59,6 +59,53 @@ rest_api = Blueprint('rest_api', __name__)
 
 #     return jsonify({'message': "OK"})
 
+@rest_api.route('/register_node', methods=['POST'])
+def register_node():
+    '''Endpoint that registers a new node in the network.
+        It is called only in the bootstrap node.
+
+        Input:
+            public_key: the public key of node to enter.
+            ip: the ip of the node to enter.
+            port: the port of the node to enter.
+
+        Returns:
+            id: the id that the new node is assigned.
+    '''
+
+    # Get the arguments
+    node_key = request.form.get('public_key')
+    node_ip = request.form.get('ip')
+    node_port = request.form.get('port')
+    node_id = len(node.state)
+    
+
+    
+    # Add node in the list of registered nodes.
+    node.state[node_id]({
+        'id':node_id, 
+        'ip':node_ip, 
+        'port':node_port, 
+        'public_key':node_key, 
+        'balance':0
+    })
+
+    # When all nodes are registered, the bootstrap node sends them:
+    # - the current chain
+    # - the ring
+    # - the first transaction
+    if (node_id == n - 1):
+        for state_node in node.state:
+            if state_node["id"] != node.id:
+                node.share_blockchain(state_node)
+                node.share_state(state_node)
+        for state_node in node.state:
+            if state_node["id"] != node.id:
+                node.create_transaction(state_node['public_key'],'coins', 1000, None)
+                print ("Sent 1000 BCC to node ", state_node["id"])
+                   
+    return jsonify({'id': node_id})
+
 @rest_api.route('/', methods=['GET', 'POST'])
 def hello():
     print("Hello")
@@ -96,8 +143,6 @@ def get_transaction():
 
     return jsonify({'message': "OK"}), 200
 
-
-
 @rest_api.route('/get_state', methods=['POST'])
 def get_state():
     '''Endpoint that gets a state (information about other nodes).
@@ -115,7 +160,7 @@ def get_state():
     return jsonify({'message': "OK"})
 
 
-@rest_api.route('/get_chain', methods=['POST'])
+@rest_api.route('/get_blockchain', methods=['POST'])
 def get_chain():
     '''Endpoint that gets a blockchain.
 

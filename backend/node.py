@@ -17,7 +17,7 @@ class Node:
         blockchain (Blockchain): the blockchain of the node.
         current_block (Block): the block that the node is fills with transactions.
         capacity (int): max number of transactions in each block.
-        state (list): list of information about other nodes
+        state (dict): list of information about other nodes
                      (id, ip, port, public_key, balance, stake_amount).
         stake_amount (int): the amount of BCC that the node has staked.        
         
@@ -31,7 +31,7 @@ class Node:
         self.blockchain = Blockchain()
         self.current_block = None
         self.capacity = None
-        self.state = []
+        self.state = {}
         self.stake_amount = 0
         
     def __str__(self): 
@@ -59,6 +59,12 @@ class Node:
 
     def create_transaction(self, receiver_adress, type_of_transaction, amount, message):
         """Create a transaction for the node."""
+        # # In case we dont take fees for the starting transactions
+        # if self.sender_address == 0 and (self.wallet.nonce in {1,2,3,4}):
+        #     self.wallet.nonce += 1
+        #     transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, self.wallet.nonce)
+        #     self.balance -= amount
+
         if receiver_adress != 0:
             if type_of_transaction == 'coins':
                 fee = 0.03*amount
@@ -74,7 +80,7 @@ class Node:
                     self.block.fees += fee
                     self.balance -= fee
                     self.wallet.nonce += 1
-                
+              
         else: #in case it is a stake transaction 
             if amount > self.stake_amount:
                 self.wallet.nonce += 1
@@ -242,3 +248,20 @@ class Node:
                 sum += stakes[i]
                 if number <= sum:
                     return self.state[i]['id']
+                
+    def share_state(self, node):
+        """Shares the node's ring (neighbor nodes) to a specific node.
+
+        This function is called for every newcoming node in the blockchain.
+        """
+
+        address = 'http://' + node['ip'] + ':' + node['port']
+        requests.post(address + '/get_state',
+                      data=pickle.dumps(self.state))
+        
+    def share_blockchain(self, node):
+        """Shares the node's current blockchain to a specific node.
+        """
+
+        address = 'http://' + node['ip'] + ':' + node['port']
+        requests.post(address + '/get_blockchain', data=pickle.dumps(self.blockchain))

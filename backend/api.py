@@ -60,8 +60,13 @@ if __name__ == '__main__':
     
         node.id = 0
         
-        node.state.append([
-            node.id, BOOTSTRAP_IP, BOOTSTRAP_PORT, node.wallet.public_key, 1000 * endpoints.n, 0])
+        node.state[node.id] = {
+        'ip': BOOTSTRAP_IP,
+        'port': BOOTSTRAP_PORT,
+        'public_key': node.wallet.public_key,
+        'balance': 1000 * endpoints.n,
+        'stake': 0
+        }
 
         # Create the genesis block
         genesis_block = node.create_new_block()
