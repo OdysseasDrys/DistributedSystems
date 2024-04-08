@@ -65,7 +65,7 @@ def client():
             }]
         method_a = prompt(method_q, style=style)["method"]
         os.system('cls||clear')
-        if method_a == 'New transaction (coins)':
+        if method_a == 'new transaction (coins)':
             print("New transaction (coins)!")
             print(
                 "----------------------------------------------------------------------")
@@ -94,33 +94,33 @@ def client():
                     'default': False
                 }
             ]
-            # confirmation_a = prompt(confirmation_q)["confirm"]
-            # if confirmation_a:
-            #     address = 'http://' + IPAddr + ':' + \
-            #         str(PORT) + '/api/create_transaction'
-            #     try:
-            #         response = requests.post(
-            #             address, data=transaction_a).json()
-            #         message = response["message"]
-            #         print("\n" + message + '\n')
-            #         try:
-            #             balance = response["balance"]
-            #             print("----------------------------------")
-            #             print("Your current balance is: " +
-            #                   str(balance) + " BCCs")
-            #             print("----------------------------------\n")
-            #         except KeyError:
-            #             pass
-            #     except:
-            #         print("\nNode is not active. Try again later.\n")
-            #     if HomeOrExit() == 'exit':
-            #         break
-            #     else:
-            #         os.system('cls||clear')
-            # else:
-            #     print("\nTransaction aborted.")
+            confirmation_a = prompt(confirmation_q)["confirm"]
+            if confirmation_a:
+                address = 'http://' + IPAddr + ':' + \
+                    str(PORT) + '/api/create_transaction'
+                try:
+                    response = requests.post(
+                        address, data=transaction_a).json()
+                    message = response["message"]
+                    print("\n" + message + '\n')
+                    try:
+                        balance = response["balance"]
+                        print("----------------------------------")
+                        print("Your current balance is: " +
+                              str(balance) + " BCCs")
+                        print("----------------------------------\n")
+                    except KeyError:
+                        pass
+                except:
+                    print("\nNode is not active. Try again later.\n")
+                if HomeOrExit() == 'exit':
+                    break
+                else:
+                    os.system('cls||clear')
+            else:
+                print("\nTransaction aborted.")
 
-        elif method_a == 'New transaction (message)':
+        elif method_a == 'new transaction (message)':
             print("New transaction (message)!")
             print(
                 "----------------------------------------------------------------------")
@@ -149,34 +149,34 @@ def client():
                     'default': False
                 }
             ]
-            # confirmation_a = prompt(confirmation_q)["confirm"]
-            # if confirmation_a:
-            #     address = 'http://' + IPAddr + ':' + \
-            #         str(PORT) + '/api/create_transaction'
-            #     try:
-            #         response = requests.post(
-            #             address, data=transaction_a).json()
-            #         message = response["message"]
-            #         print("\n" + message + '\n')
-            #         try:
-            #             balance = response["balance"]
-            #             print("----------------------------------")
-            #             print("Your current balance is: " +
-            #                   str(balance) + " BCCs")
-            #             print("----------------------------------\n")
-            #         except KeyError:
-            #             pass
-            #     except:
-            #         print("\nNode is not active. Try again later.\n")
-            #     if HomeOrExit() == 'exit':
-            #         break
-            #     else:
-            #         os.system('cls||clear')
-            # else:
-            #     print("\nTransaction aborted.")
+            confirmation_a = prompt(confirmation_q)["confirm"]
+            if confirmation_a:
+                address = 'http://' + IPAddr + ':' + \
+                    str(PORT) + '/api/create_transaction'
+                try:
+                    response = requests.post(
+                        address, data=transaction_a).json()
+                    message = response["message"]
+                    print("\n" + message + '\n')
+                    try:
+                        balance = response["balance"]
+                        print("----------------------------------")
+                        print("Your current balance is: " +
+                              str(balance) + " BCCs")
+                        print("----------------------------------\n")
+                    except KeyError:
+                        pass
+                except:
+                    print("\nNode is not active. Try again later.\n")
+                if HomeOrExit() == 'exit':
+                    break
+                else:
+                    os.system('cls||clear')
+            else:
+                print("\nTransaction aborted.")
 
-        elif method_a == 'View last transactions':
-            print("Last transactions (last valid block in the blockchain")
+        elif method_a == 'view last transactions':
+            print("Last transactions (last valid block in the blockchain)")
             print(
                 "----------------------------------------------------------------------\n")
             address = 'http://' + IPAddr + ':' + \
@@ -191,9 +191,8 @@ def client():
                                       't',  # text
                                       't',  # text
                                       't'])  # text
-                table.set_cols_align(["c", "c", "c", "c", "c"])
-                # headers = ["Sender ID", "Receiver ID",
-                #            "Amount", "BCC sent", "Change"]
+                table.set_cols_align(["c", "c", "c", "c", "c","c"])
+                headers = ["Sender ID", "Receiver ID","Type of transaction", "Amount or message", "BCC used"]
                 rows = []
                 rows.append(headers)
                 rows.extend(data)
@@ -205,7 +204,25 @@ def client():
                 break
             else:
                 os.system('cls||clear')
-        elif method_a == 'Show balance':
+        elif method_a == 'stake/unstake':
+            print("Stake amount for the node")
+            print(
+                "----------------------------------------------------------------------\n")
+            address = 'http://' + IPAddr + ':' + \
+                str(PORT) + '/api/get_stake_balance'
+            try:
+                response = requests.get(address).json()
+                message = response['message']
+                balance = str(response['balance'])
+                print(message + balance + ' BCCs staked\n') #todo: stake/unstake, if amount>stake transaction to node 0, else transaction from node 0
+            except:
+                print("Node is not active. Try again later.\n")
+            if HomeOrExit() == 'exit':
+                break
+            else:
+                os.system('cls||clear')
+
+        elif method_a == 'show balance':
             print("Your balance")
             print(
                 "----------------------------------------------------------------------\n")
@@ -221,7 +238,7 @@ def client():
                 break
             else:
                 os.system('cls||clear')
-        elif method_a == 'Help':
+        elif method_a == 'help':
             print("Help")
             print(
                 "----------------------------------------------------------------------")
