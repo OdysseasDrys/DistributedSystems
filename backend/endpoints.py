@@ -72,23 +72,20 @@ def register_node():
         Returns:
             id: the id that the new node is assigned.
     '''
-
     # Get the arguments
     node_key = request.form.get('public_key')
     node_ip = request.form.get('ip')
     node_port = request.form.get('port')
     node_id = len(node.state)
-    
 
-    
     # Add node in the list of registered nodes.
-    node.state[node_id]({
-        'id':node_id, 
-        'ip':node_ip, 
-        'port':node_port, 
-        'public_key':node_key, 
-        'balance':0
-    })
+    node.state[node_id] = {
+        'id': node_id, 
+        'ip': node_ip, 
+        'port': node_port, 
+        'public_key': node_key, 
+        'balance': 0
+    }
 
     # When all nodes are registered, the bootstrap node sends them:
     # - the current chain
@@ -99,12 +96,13 @@ def register_node():
             if state_node["id"] != node.id:
                 node.share_blockchain(state_node)
                 node.share_state(state_node)
+                
         for state_node in node.state:
             if state_node["id"] != node.id:
-                node.create_transaction(state_node['public_key'],'coins', 1000, None)
-                print ("Sent 1000 BCC to node ", state_node["id"])
-                   
-    return jsonify({'id': node_id})
+                node.create_transaction(state_node['public_key'], 'coins', 1000, None)
+                print("Sent 1000 BCC to node ", state_node["id"])
+
+    return jsonify({'id': node_id}), 200
 
 @rest_api.route('/', methods=['GET', 'POST'])
 def hello():

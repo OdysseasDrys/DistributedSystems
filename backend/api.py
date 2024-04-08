@@ -33,18 +33,16 @@ CORS(app)
 if __name__ == '__main__':
     #Define the argument parser.
     parser = ArgumentParser(description='Rest api of BCC.')
+    parser.add_argument('--nodes', type=int, help='Number of nodes')
+    parser.add_argument('--port', type=int, help='Port number')
+    parser.add_argument('--bootstrap', action='store_true', help='Boolean variable')
 
-    required = parser.add_argument_group('required arguments')
-    optional = parser.add_argument_group('optional_arguments')
 
     
-    optional.add_argument('-bootstrap', action='store_true',
-                          help='set if the current node is the bootstrap')
-
     # Parse the given arguments.
     args = parser.parse_args()
-    port = BOOTSTRAP_PORT
-    endpoints.n = 5
+    port = args.port
+    endpoints.n = args.nodes
     capacity = 5
     is_bootstrap = args.bootstrap
 
@@ -91,24 +89,18 @@ if __name__ == '__main__':
             - starts listening in the desired port.
         """
 
-        register_address = 'http://' + BOOTSTRAP_IP + \
-            ':' + BOOTSTRAP_PORT + '/register_node'
+        # Define the register address outside the function
+        register_address = 'http://' + BOOTSTRAP_IP + ':' + BOOTSTRAP_PORT + '/register_node'
 
-        def thread_function():
-            time.sleep(2)
-            response = requests.post(
-                register_address,
-                data={'public_key': node.wallet.public_key,
-                      'ip': BOOTSTRAP_IP, 'port': port}
-            )
+        # Make a request to register the node
+        response = requests.post(register_address,
+                                data={'public_key': node.wallet.public_key, 'ip': BOOTSTRAP_IP, 'port': port})
 
-            if response.status_code == 200:
-                print("Node initialized")
-
+        if response.status_code == 200:
+            print("Node initialized")
             node.id = response.json()['id']
-
-        req = threading.Thread(target=thread_function, args=())
-        req.start()
+        else:
+            print("Failed to initialize node")
 
         # Listen in the specified address (ip:port)
         app.run(host=BOOTSTRAP_IP, port=port)
