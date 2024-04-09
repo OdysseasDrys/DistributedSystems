@@ -1,6 +1,7 @@
 import pickle
 import node
 import jsonpickle
+
     
 from flask import Blueprint, jsonify, request
 
@@ -9,6 +10,7 @@ from node import Node
 #Initialize the node
 node = Node()
 n = 0
+node.state = []
 rest_api = Blueprint('rest_api', __name__)
 
 
@@ -78,27 +80,32 @@ def register_node():
     node_port = request.form.get('port')
     node_id = len(node.state)
 
+    print("pragmata: ",node_key, node_ip, node_port, node_id)
+    
     # Add node in the list of registered nodes.
-    node.state[node_id] = {
+    node.state.append({
         'id': node_id, 
         'ip': node_ip, 
         'port': node_port, 
         'public_key': node_key, 
-        'balance': 0
-    }
-
+        'balance': 0,
+        'stake': 0
+    })
+    
     # When all nodes are registered, the bootstrap node sends them:
     # - the current chain
-    # - the ring
+    # - the state
     # - the first transaction
     if (node_id == n - 1):
         for state_node in node.state:
-            if state_node["id"] != node.id:
+            print("---auto: ",state_node)
+            if state_node['id'] != node.id:
                 node.share_blockchain(state_node)
                 node.share_state(state_node)
                 
         for state_node in node.state:
-            if state_node["id"] != node.id:
+            print("---auto: ",state_node)
+            if state_node['id'] != node.id:
                 node.create_transaction(state_node['public_key'], 'coins', 1000, None)
                 print("Sent 1000 BCC to node ", state_node["id"])
 

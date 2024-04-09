@@ -31,7 +31,7 @@ class Node:
         self.blockchain = Blockchain()
         self.current_block = None
         self.capacity = None
-        self.state = {}
+        self.state = []
         self.stake_amount = 0
         
     def __str__(self): 
