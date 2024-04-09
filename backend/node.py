@@ -265,3 +265,5 @@ class Node:
 
         address = 'http://' + node['ip'] + ':' + node['port']
         requests.post(address + '/get_blockchain', data=pickle.dumps(self.blockchain))
+
+        

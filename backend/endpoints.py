@@ -1,6 +1,7 @@
 import pickle
 import node
 import jsonpickle
+import requests
 
     
 from flask import Blueprint, jsonify, request
@@ -80,7 +81,8 @@ def register_node():
     node_port = request.form.get('port')
     node_id = len(node.state)
 
-    print("pragmata: ",node_key, node_ip, node_port, node_id)
+    
+    # print("pragmata: ",node_key, node_ip, node_port, node_id)
     
     # Add node in the list of registered nodes.
     node.state.append({
@@ -96,15 +98,17 @@ def register_node():
     # - the current chain
     # - the state
     # - the first transaction
-    if (node_id == n - 1):
+    # print("N:",n)
+    if (node_id == n - 1 ): #isws thelei n-1
         for state_node in node.state:
-            print("---auto: ",state_node)
             if state_node['id'] != node.id:
                 node.share_blockchain(state_node)
+                print("share_blockchain")
                 node.share_state(state_node)
-                
+                print("share-state")
+        print("---after sharing blockchain and state: ",state_node)
         for state_node in node.state:
-            print("---auto: ",state_node)
+            #print("---auto: ",state_node)
             if state_node['id'] != node.id:
                 node.create_transaction(state_node['public_key'], 'coins', 1000, None)
                 print("Sent 1000 BCC to node ", state_node["id"])
@@ -166,7 +170,7 @@ def get_state():
 
 
 @rest_api.route('/get_blockchain', methods=['POST'])
-def get_chain():
+def get_blockchain():
     '''Endpoint that gets a blockchain.
 
         Input:
@@ -175,6 +179,8 @@ def get_chain():
             message: the outcome of the procedure.
     '''
     node.blockchain = pickle.loads(request.get_data())
+    
+    # return jsonpickle.encode(request.get_data())
     return jsonify({'message': "OK"})
 
 
