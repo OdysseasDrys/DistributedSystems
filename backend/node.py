@@ -5,6 +5,7 @@ from transaction import Transaction
 import requests
 import pickle
 import random
+import jsonpickle
 
 class Node:
     """
@@ -57,26 +58,28 @@ class Node:
             self.current_block = Block(index, previous_hash, self.capacity)
         return self.current_block
 
-    def create_transaction(self, receiver_adress, type_of_transaction, amount, message):
+    def create_transaction(self, receiver_address, type_of_transaction, amount, message):
         """Create a transaction for the node."""
         # # In case we dont take fees for the starting transactions
         # if self.sender_address == 0 and (self.wallet.nonce in {1,2,3,4}):
         #     self.wallet.nonce += 1
-        #     transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, self.wallet.nonce)
+        #     transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, None, self.wallet.nonce)
         #     self.balance -= amount
 
-        if receiver_adress != 0:
+        if receiver_address != 0:
             if type_of_transaction == 'coins':
                 fee = 0.03*amount
                 if (self.balance >= (amount+fee)):
                     self.wallet.nonce += 1
-                    transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, self.wallet.nonce)
+                    transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, None, self.wallet.nonce)
+                    transaction.sign_transaction(self.wallet.private_key)
                     self.block.fees += fee
                     self.balance -= fee+amount
             if type_of_transaction == 'message':
                 fee = len(message)
                 if (self.balance >= fee):
-                    transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, None, message, self.wallet.nonce)
+                    transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, None, message, self.wallet.nonce)
+                    transaction.sign_transaction(self.wallet.private_key)
                     self.block.fees += fee
                     self.balance -= fee
                     self.wallet.nonce += 1
@@ -84,16 +87,18 @@ class Node:
         else: #in case it is a stake transaction 
             if amount > self.stake_amount:
                 self.wallet.nonce += 1
-                transaction = Transaction(self.wallet.public_key, receiver_adress, type_of_transaction, amount, None, self.wallet.nonce)
+                transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, None, self.wallet.nonce)
+                transaction.sign_transaction(self.wallet.private_key)
                 self.balance -= amount
                 
             elif amount < self.stake_amount:
                 self.wallet.nonce += 1
-                transaction = Transaction(receiver_adress, self.wallet.public_key, type_of_transaction, amount, None, self.wallet.nonce)
+                transaction = Transaction(receiver_address, self.wallet.public_key, type_of_transaction, amount, None, self.wallet.nonce)
+                transaction.sign_transaction(self.wallet.private_key)
                 self.balance -= amount
                 
 
-        transaction.sign_transaction(self.wallet.private_key)
+        
 
         if self.broadcast_transaction(transaction):
             return True
@@ -213,7 +218,7 @@ class Node:
     def add_transaction_to_block(self, transaction):
         
         #if node sender or receiver add transaction 
-        if (transaction.sender_adress == self.wallet.public_key) or (transaction.receiver_adress == self.wallet.public_key):
+        if (transaction.sender_address == self.wallet.public_key) or (transaction.receiver_address == self.wallet.public_key):
              self.wallet.add_transaction(transaction)
 
         # Update the balance of the recipient and the sender.
@@ -264,6 +269,10 @@ class Node:
         """
 
         address = 'http://' + node['ip'] + ':' + node['port']
+        print("----------" + address + '/get_blockchain')
+        print("----------",(jsonpickle.encode(self.blockchain)))
         requests.post(address + '/get_blockchain', data=pickle.dumps(self.blockchain))
+        # requests.post(address + '/get_blockchain', data=jsonpickle.encode(self.blockchain))
+        # time.sleep(2)
 
         

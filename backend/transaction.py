@@ -7,8 +7,8 @@ from Crypto.Signature import pss
 class Transaction:
     """
     Each transaction has:
-    - sender_adress: the public key of the sender
-    - receiver_adress: the public key of the recipient
+    - sender_address: the public key of the sender
+    - receiver_address: the public key of the recipient
     - type_of_transaction: the type of the transaction, coins or message
     - amount: the amount of the transaction
     - message: the string of the message
@@ -17,9 +17,9 @@ class Transaction:
     - Signature: the signature of the transaction, proof that the holder of the wallet created the transaction
     """
 
-    def __init__(self, sender_adress, receiver_adress, type_of_transaction, amount, message, nonce, Signature=None):
-        self.sender_address = sender_adress
-        self.receiver_address = receiver_adress
+    def __init__(self, sender_address, receiver_address, type_of_transaction, amount, message, nonce, Signature=None):
+        self.sender_address = sender_address
+        self.receiver_address = receiver_address
         self.nonce = nonce
         self.transaction_id = self.get_hash()
         self.Signature = None

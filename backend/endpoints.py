@@ -101,6 +101,7 @@ def register_node():
     # print("N:",n)
     if (node_id == n - 1 ): #isws thelei n-1
         for state_node in node.state:
+            print("------state_node: ", state_node)
             if state_node['id'] != node.id:
                 node.share_blockchain(state_node)
                 print("share_blockchain")
@@ -108,6 +109,7 @@ def register_node():
                 print("share-state")
         print("---after sharing blockchain and state: ",state_node)
         for state_node in node.state:
+            print("------state_node2: ", state_node)
             #print("---auto: ",state_node)
             if state_node['id'] != node.id:
                 node.create_transaction(state_node['public_key'], 'coins', 1000, None)
@@ -179,7 +181,7 @@ def get_blockchain():
             message: the outcome of the procedure.
     '''
     node.blockchain = pickle.loads(request.get_data())
-    
+    # node.blockchain = jsonpickle.decode(request.get_data())
     # return jsonpickle.encode(request.get_data())
     return jsonify({'message': "OK"})
 

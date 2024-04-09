@@ -72,7 +72,7 @@ if __name__ == '__main__':
         
 
         # Adds the first and only transaction in the genesis block.
-        first_transaction = Transaction(sender_adress="0", receiver_adress="0", type_of_transaction="coins", amount=1000*endpoints.n, message=None, nonce=0, Signature=None)
+        first_transaction = Transaction(sender_address="0", receiver_address="0", type_of_transaction="coins", amount=1000*endpoints.n, message=None, nonce=0, Signature=None)
         genesis_block.transactions.append(first_transaction)
         genesis_block.current_hash = genesis_block.calculate_hash()
         node.wallet.transactions.append(first_transaction)
@@ -93,15 +93,20 @@ if __name__ == '__main__':
         # Define the register address outside the function
         register_address = 'http://' + BOOTSTRAP_IP + ':' + BOOTSTRAP_PORT + '/register_node'
 
-        # Make a request to register the node
-        response = requests.post(register_address,
+        def thread_function():
+            time.sleep(2)
+            response = requests.post(register_address,
                                 data={'public_key': node.wallet.public_key, 'ip': BOOTSTRAP_IP, 'port': port})
 
-        if response.status_code == 200:
-            print("Node initialized")
+            if response.status_code == 200:
+                print("Node initialized")
+            else:
+                print("Failed to initialize node")
+
             node.id = response.json()['id']
-        else:
-            print("Failed to initialize node")
+
+        req = threading.Thread(target=thread_function, args=())
+        req.start()
 
         # Listen in the specified address (ip:port)
         app.run(host=BOOTSTRAP_IP, port=port)
