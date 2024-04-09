@@ -42,10 +42,6 @@ class Node:
     def __str__(self): 
         return str(self.__class__) + ": " + str(self.__dict__)
     
-    def add_transaction(self, transaction):
-        """Add a transaction to the node's wallet."""
-        self.wallet.add_transaction(transaction)
-
     def generate_wallet(self):
         """Generate a wallet for the node."""
         self.wallet= Wallet()
@@ -118,11 +114,7 @@ class Node:
             return True
         else:
             return False         
-
-    def get_transaction(self , transaction = None): 
-        """Get a transaction from the node's wallet."""
-        return self.wallet.get_transaction(transaction)
-    
+  
     def stake(self, amount):
         """Set the node's stake."""
         if self.stake_amount == amount:
@@ -249,7 +241,7 @@ class Node:
         
         #if node sender or receiver add transaction 
         if (transaction.sender_address == self.wallet.public_key) or (transaction.receiver_address == self.wallet.public_key):
-             self.wallet.add_transaction(transaction)
+             self.wallet.add_transaction_to_wallet(transaction)
 
         # Update the balance of the recipient and the sender.
         if self.current_block is None:

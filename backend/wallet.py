@@ -63,7 +63,7 @@ class Wallet:
             'transactions': self.transactions
         }
     
-    def add_transaction(self, transaction):
+    def add_transaction_to_wallet(self, transaction):
         """
         Add a transaction to the wallet
         """
