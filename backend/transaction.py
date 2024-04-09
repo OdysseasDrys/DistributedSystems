@@ -24,7 +24,10 @@ class Transaction:
         self.transaction_id = self.get_hash()
         self.Signature = None
         self.type_of_transaction = type_of_transaction
-        if self.type_of_transaction == 'coins':
+        if self.type_of_transaction == 'first':
+            self.amount = amount
+            self.message = None
+        elif self.type_of_transaction == 'coins':
             self.amount = amount
             self.message = None
         elif self.type_of_transaction == 'message':
@@ -52,7 +55,7 @@ class Transaction:
         h = SHA256.new(self.transaction_id.encode('ISO-8859-1'))
         verifier = pss.new(key)
         try:
-            verifier.verify(h, self.signature.encode('ISO-8859-1'))
+            verifier.verify(h, self.Signature.encode('ISO-8859-1'))
             return True
         except (ValueError, TypeError):
             return False       

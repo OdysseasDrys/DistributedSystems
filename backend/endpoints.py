@@ -17,50 +17,51 @@ rest_api = Blueprint('rest_api', __name__)
 
 
 
-# @rest_api.route('/get_block', methods=['POST'])
-# def get_block():
-#     '''Endpoint that gets an incoming block, validates it and adds it in the
-#         blockchain.
+@rest_api.route('/get_block', methods=['POST'])
+def get_block():
+    '''Endpoint that gets an incoming block, validates it and adds it in the
+        blockchain.
 
-#         Input:
-#             new_block: the incoming block in pickle format.
-#         Returns:
-#             message: the outcome of the procedure.
-#     '''
-#     new_block = pickle.loads(request.get_data())
-#     
-#     if node.validate_block(new_block):
-#         # If the block is valid:
-#         # - Add block to the current blockchain.
-#         # - Remove the new_block's transactions from the unconfirmed_blocks of the node.
-#         # Update previous hash and index in case of insertions in the blockchain
-#         
-#         with node.filter_lock:
-#             node.blockchain.blocks.append(new_block)
-#             
-#             
-#     else:
-#         # If the block is not valid, check if the signature is not authentic or
-#         # there is a conflict.
-#         if node.validate_previous_hash(new_block):
-#             node.chain_lock.release()
-#             return jsonify({'message': "The signature is not authentic. The block has been modified."}), 401
-#         else:
-#             # Resolve conflict (multiple blockchains/branch).
-#             if node.resolve_conflicts(new_block):
-#                 # Add block to the current blockchain
-#                 node.stop_mining = True
-#                 with node.filter_lock:
-#                     node.blockchain.blocks.append(new_block)
-#                     node.chain_lock.release()
-#                     # Remove the new_block's transactions from the unconfirmed_blocks of the node.
-#                     node.filter_blocks(new_block)
-#                     node.stop_mining = False
-#             else:
-#                 node.chain_lock.release()
-#                 return jsonify({'mesage': "Block rejected."}), 409
+        Input:
+            new_block: the incoming block in pickle format.
+        Returns:
+            message: the outcome of the procedure.
+    '''
+    new_block = pickle.loads(request.get_data())
+    node.chain_lock.acquire()
+    if node.validate_block(new_block):
+        # If the block is valid:
+        # - Add block to the current blockchain.
+        # - Remove the new_block's transactions from the unconfirmed_blocks of the node.
+        # Update previous hash and index in case of insertions in the chain
+        
+        with node.filter_lock:
+            node.chain.blocks.append(new_block)
+            node.chain_lock.release()
+            node.filter_blocks(new_block)
+            
+    else:
+        # If the block is not valid, check if the signature is not authentic or
+        # there is a conflict.
+        if node.validate_previous_hash(new_block):
+            node.chain_lock.release()
+            return jsonify({'message': "The signature is not authentic. The block has been modified."}), 401
+        else:
+            # Resolve conflict (multiple blockchains/branch).
+            if node.resolve_conflicts(new_block):
+                # Add block to the current blockchain
+                node.stop_mining = True
+                with node.filter_lock:
+                    node.chain.blocks.append(new_block)
+                    node.chain_lock.release()
+                    # Remove the new_block's transactions from the unconfirmed_blocks of the node.
+                    node.filter_blocks(new_block)
+                    node.stop_mining = False
+            else:
+                node.chain_lock.release()
+                return jsonify({'mesage': "Block rejected."}), 409
 
-#     return jsonify({'message': "OK"})
+    return jsonify({'message': "OK"})
 
 @rest_api.route('/register_node', methods=['POST'])
 def register_node():
@@ -80,9 +81,6 @@ def register_node():
     node_ip = request.form.get('ip')
     node_port = request.form.get('port')
     node_id = len(node.state)
-
-    
-    # print("pragmata: ",node_key, node_ip, node_port, node_id)
     
     # Add node in the list of registered nodes.
     node.state.append({
@@ -98,21 +96,18 @@ def register_node():
     # - the current chain
     # - the state
     # - the first transaction
-    # print("N:",n)
-    if (node_id == n - 1 ): #isws thelei n-1
+    
+    if (node_id == n - 1 ): 
         for state_node in node.state:
-            print("------state_node: ", state_node)
             if state_node['id'] != node.id:
                 node.share_blockchain(state_node)
-                print("share_blockchain")
                 node.share_state(state_node)
-                print("share-state")
-        print("---after sharing blockchain and state: ",state_node)
+        # print("---after sharing blockchain and state: ",state_node)
         for state_node in node.state:
-            print("------state_node2: ", state_node)
+            # print("------state_node2: ", state_node)
             #print("---auto: ",state_node)
             if state_node['id'] != node.id:
-                node.create_transaction(state_node['public_key'], 'coins', 1000, None)
+                node.create_transaction(state_node['public_key'], 'first', 1000, "-")
                 print("Sent 1000 BCC to node ", state_node["id"])
 
     return jsonify({'id': node_id}), 200

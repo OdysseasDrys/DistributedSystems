@@ -1,4 +1,5 @@
 import binascii
+import jsonpickle
 
 import Crypto
 import Crypto.Random
@@ -27,13 +28,19 @@ class Wallet:
     def __init__(self):
         """Intialize the wallet"""
         random_gen = Crypto.Random.new().read
-        private_key = RSA.generate(1024, random_gen)
-        public_key = private_key.publickey()
+        key = RSA.generate(1024, random_gen)
+
+        self.private_key = key.exportKey().decode('ISO-8859-1')
+        self.public_key = key.publickey().exportKey().decode('ISO-8859-1')
+
+        #random_gen = Crypto.Random.new().read
+        #private_key = RSA.generate(1024, random_gen)
+        #public_key = private_key.publickey()
         self.nonce = 0
 
         # Save keys as hex strings
-        self.private_key = binascii.hexlify(private_key.export_key(format='DER')).decode('ascii')
-        self.public_key = binascii.hexlify(public_key.export_key(format='DER')).decode('ascii')
+        #self.private_key = binascii.hexlify(private_key.export_key(format='DER')).decode('ascii')
+        #self.public_key = binascii.hexlify(public_key.export_key(format='DER')).decode('ascii')
         self.transactions = []
 
     def sign_transaction(self, transaction):
@@ -81,6 +88,11 @@ class Wallet:
         balance = 0
         staked_balance = self.get_stake_balance()
         for transaction in self.transactions:
+            print("---",jsonpickle.encode(transaction))
+            # print("--- TO KLEIDI ---",self.public_key)
             if transaction.sender_address != 0:
-                balance += transaction.amount
+                if transaction.sender_address == self.public_key:
+                    balance -= transaction.amount
+                elif transaction.receiver_address == self.public_key:
+                    balance += transaction.amount
         return balance - abs(staked_balance)

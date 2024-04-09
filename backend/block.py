@@ -31,6 +31,7 @@ class Block(object):
 
     def add_transaction(self, transaction):
         """Add a transaction to the block"""
+        print("---", self.capacity)
         if len(self.transactions) < self.capacity:
             self.transactions.append(transaction)
             return True
@@ -59,7 +60,10 @@ class Block(object):
             'capacity': self.capacity,
             'fees': self.fees
         }
-        address = 'http://' + ip + ':' + port +'/get_block'
-        response = requests.post(address, json=block_data)
+        address = 'http://' + ip + ':' + port + '/get_block'
+        # Serialize the block_data dictionary to bytes using pickle.dumps
+        block_bytes = pickle.dumps(block_data)
+        # Send the pickled data as the payload
+        response = requests.post(address, data=block_bytes)
         return response.status_code
     

@@ -25,7 +25,7 @@ BOOTSTRAP_PORT = config.BOOTSTRAP_PORT
 
 # Define the flask environment and register the blueprint with the endpoints.
 app = Flask(__name__)
-app.config['DEBUG']=True
+app.config['DEBUG']=False
 app.register_blueprint(rest_api)
 CORS(app)
 
@@ -45,6 +45,7 @@ if __name__ == '__main__':
     endpoints.n = args.nodes
     capacity = 5
     is_bootstrap = args.bootstrap
+    node.capacity = 5
 
     if (is_bootstrap):
         """
@@ -69,17 +70,22 @@ if __name__ == '__main__':
 
         # Create the genesis block
         genesis_block = node.create_new_block()
+        node.current_block = genesis_block
         
 
         # Adds the first and only transaction in the genesis block.
-        first_transaction = Transaction(sender_address="0", receiver_address="0", type_of_transaction="coins", amount=1000*endpoints.n, message=None, nonce=0, Signature=None)
+        first_transaction = Transaction(sender_address="0", receiver_address=node.wallet.public_key, type_of_transaction="first", amount=1000*endpoints.n, message=None, nonce=0, Signature=None)
+        node.balance = 1000*endpoints.n
+        print("nodes: ",endpoints.n)
+        
         genesis_block.transactions.append(first_transaction)
         genesis_block.current_hash = genesis_block.calculate_hash()
         node.wallet.transactions.append(first_transaction)
 
         # Add the genesis block in the chain.
         node.blockchain.blocks.append(genesis_block)
-        node.current_block = None
+        node.create_new_block()
+        print(node.wallet.public_key)
 
         # Listen in the specified address (ip:port)
         app.run(host=BOOTSTRAP_IP, port=BOOTSTRAP_PORT)
@@ -92,7 +98,7 @@ if __name__ == '__main__':
 
         # Define the register address outside the function
         register_address = 'http://' + BOOTSTRAP_IP + ':' + BOOTSTRAP_PORT + '/register_node'
-
+        print(node.wallet.public_key)
         def thread_function():
             time.sleep(2)
             response = requests.post(register_address,
@@ -105,8 +111,8 @@ if __name__ == '__main__':
 
             node.id = response.json()['id']
 
-        req = threading.Thread(target=thread_function, args=())
-        req.start()
-
+        reqister_thread = threading.Thread(target=thread_function, args=())
+        reqister_thread.start()
+        print("Number of nodes: ", endpoints.n)
         # Listen in the specified address (ip:port)
         app.run(host=BOOTSTRAP_IP, port=port)
