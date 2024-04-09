@@ -33,8 +33,8 @@ CORS(app)
 if __name__ == '__main__':
     #Define the argument parser.
     parser = ArgumentParser(description='Rest api of BCC.')
-    parser.add_argument('--nodes', type=int, help='Number of nodes')
-    parser.add_argument('--port', type=int, help='Port number')
+    parser.add_argument('--nodes', type=int, help='Number of nodes', required= True)
+    parser.add_argument('--port', type=int, help='Port number', required=True)
     parser.add_argument('--bootstrap', action='store_true', help='Boolean variable')
 
 
