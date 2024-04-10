@@ -185,7 +185,9 @@ class Node:
             broadcasted = True
             for node in self.state:
                 if node["id"]!=self.id:
-                    response = self.current_block.broadcast_block(node["ip"], node["port"])
+                    
+                    response = self.requests.post(address + '/get_block',
+                                         data=pickle.dumps(block))
                     responses.append(response)
             
             for res in responses:
