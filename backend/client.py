@@ -71,11 +71,20 @@ def client():
                 'type': 'list',
                 'name': 'method',
                 'message': 'What would you like to do?',
-                'choices': ['New transaction (coins)', 'New transaction (message)', 'Stake/Unstake', 'View last transactions','View wallet transactions', 'Show balance', 'Help', 'Exit'],
+                'choices': ['New transaction (coins)', 'New transaction (message)', 'Stake/Unstake', 'View last transactions','View wallet transactions', 'Show balance', 'Test inputs', 'Help', 'Exit'],
                 'filter': lambda val: val.lower()
             }]
         method_a = prompt(method_q, style=style)["method"]
         # os.system('cls||clear')
+        if method_a == 'test inputs':
+            address = 'http://' + IPAddr + ':' + \
+                    str(PORT) + '/api/parse_file'
+            response = requests.get(address)
+                # print(response.content)
+            # data= jsonpickle.decode(response.content)
+            print("[Transactions per second, Average time of block]: ", response.content.decode('utf-8'))
+            if HomeOrExit() == 'exit':
+                break
         if method_a == 'new transaction (coins)':
             print("New transaction (coins)!")
             print(
@@ -364,6 +373,7 @@ def client():
             print("- Stake/Unstake: View the current staked amount of this node and choose the new stake amount you want to set.")
             print("- View last transactions: Prints the transactions of the last validated block of the Blockchat blockchain.")
             print("- View wallet transactions: Prints the transactions of the wallet.")
+            print("- Test inputs: Use the input file and print the throuput.")
             print("- Show balance: Prints the current balance of your wallet.")
             print("- Help: Prints usage information about the options.\n")
 

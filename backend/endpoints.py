@@ -321,3 +321,13 @@ def get_id():
             message: the id of the node.
     '''
     return jsonify({'message': node.id})
+
+@rest_api.route('/api/parse_file', methods=['GET'])
+def parse_file():
+    # node.parse_file()
+    '''Endpoint that returns the id of the node.
+
+        Returns:
+            message: the id of the node.
+    '''
+    return node.parse_file()

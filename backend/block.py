@@ -27,6 +27,7 @@ class Block(object):
         self.current_hash = None
         self.capacity = capacity
         self.fees = 0
+        self.time_of_death = 0
         
 
     def add_transaction(self, transaction):
@@ -50,20 +51,8 @@ class Block(object):
         sorted_block_string = pickle.dumps(block_dict, protocol=0)
         return hashlib.sha256(sorted_block_string).hexdigest()
     
-    # def broadcast_block(self, ip, port):
-    #     block_data = {
-    #         'index': self.index,
-    #         'timestamp': self.timestamp,
-    #         'transactions': self.transactions,
-    #         'validator': self.validator,
-    #         'previous_hash': self.previous_hash,
-    #         'capacity': self.capacity,
-    #         'fees': self.fees
-    #     }
-    #     address = 'http://' + ip + ':' + port + '/get_block'
-    #     # Serialize the block_data dictionary to bytes using pickle.dumps
-    #     block_bytes = pickle.dumps(block_data)
-    #     # Send the pickled data as the payload
-    #     response = requests.post(address, data=block_bytes)
-    #     return response.status_code
-    
+    def get_block_duration(self):
+        """Calculates the time it took to validate the block"""
+        duration = self.time_of_death-self.timestamp
+        return duration
+   

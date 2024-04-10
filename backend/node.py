@@ -270,13 +270,14 @@ class Node:
                 if res.status_code != 200:
                     # print("bad response")
                     broadcasted = False
-                    break          
             if broadcasted:
                 # print("broadcast all good, now to create a new block")
                 #if node.current_block.previous_hash == node.blockchain.blocks[-1].current_hash
                 # print("Fees of the Block: ",self.current_block.fees)
                 self.balance += self.current_block.fees
-                self.blockchain.add_block(self.current_block)            
+                
+                self.blockchain.add_block(self.current_block)  
+                self.current_block.time_of_death = time.time()
                 self.create_new_block()
                 # print("Created new Block")
 
@@ -351,7 +352,7 @@ class Node:
             # transaction.fee = fee
             # print("EFTASE EDW")
             self.wallet.add_transaction_to_wallet(transaction)
-            
+        # if receiver_address == 0
         # Update the balance of the recipient and the sender.
         if self.current_block is None:
             self.current_block = self.create_new_block()
@@ -388,15 +389,26 @@ class Node:
     def proof_of_stake(self):
         random.seed(self.current_block.previous_hash)
         stakes = [node['stake'] for node in self.state]
+        print(stakes)
         total_stake = sum(stakes)
         if total_stake == 0:
+            # print("MH MPEIS EDW")
             return random.choice(self.state)['id']  # Fallback if no stakes are present
 
-        summ = 0
-        number = random.randint(0, total_stake)
-        for i, stake in enumerate(stakes):
-            summ += stake
-            if number <= summ:
+        # summ = 0
+        # number = random.randint(0, total_stake)
+        # for i, stake in enumerate(stakes):
+        #     summ += stake
+        #     if number <= summ:
+        #         return self.state[i]['id']
+                
+        stake_thresholds = [stake / total_stake for stake in stakes]
+        rng_value = random.random()
+        cumulative = 0
+        for i, threshold in enumerate(stake_thresholds):
+            cumulative += threshold
+            if rng_value <= cumulative:
+                # print("eftases?")
                 return self.state[i]['id']
 
                 
@@ -421,7 +433,7 @@ class Node:
                       data=pickle.dumps(self.state))
         
     def parse_file(self):
-        input_file = f"./5nodes/trans{self.id}.txt"
+        input_file = f"../5nodes/trans{self.id}.txt"
         with open(input_file, 'r') as file:
             lines = file.readlines()
         
@@ -441,26 +453,20 @@ class Node:
                     self.create_transaction(node['public_key'], "message", 0, message)
                     num_of_transactions += 1
                     break
-            end_time = time.time()
-            duration = end_time - start_time
-            transactions_per_sec = num_of_transactions / duration
-            print("Transactions per second : ", transactions_per_sec)
+        end_time = time.time()
+        duration = end_time - start_time
+        transactions_per_sec = num_of_transactions / duration
+        print("Transactions per second : ", transactions_per_sec)
+        
+        block_duration_sum = 0
+
+        for block in self.blockchain.blocks:
+            block_duration_sum += block.get_block_duration()
+        
+        avg_block_duration = block_duration_sum/len(self.blockchain.blocks)
+        print("Avg block duration : ", avg_block_duration)
+
+        return [transactions_per_sec, avg_block_duration]
             
 
-        #     recipient_pk = None
-        #     # Retrieve the recipient public key, by its id
-        #     for pk, node_dict in self.node_ring.items():
-        #         if node_dict['id'] == id_str:
-        #             self.create_transaction(node)
-            
-        #     # TODO change this if we are running with more nodes.
-        #     #if id_str <= 'id2':
-        #     self.create_transaction(self.wallet.public_key, recipient_pk, 'message',message=message_str)
-        #     num_of_transactions = num_of_transactions + 1
-
-        # end_time = time.time()
-        # elapsed_time = end_time - start_time
-        # tps = number_of_transactions / elapsed_time
-        # block_time = self.block_elapsed_time / self.blockchain.number_of_blocks_in_blockchain()
-        # print("Transactions per second (TPS): ", tps)
-        # print("Average Block Time: ", block_time)
+        
