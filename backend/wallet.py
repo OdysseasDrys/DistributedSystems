@@ -1,6 +1,6 @@
 import binascii
 import jsonpickle
-
+import node
 import Crypto
 import Crypto.Random
 from Crypto.Hash import SHA
@@ -82,28 +82,28 @@ class Wallet:
                 stake_balance += transaction.amount
         return abs(stake_balance)
     
-    def get_balance(self):
+    def get_balance(self,node):
         """
         Get the balance of the wallet
         """
         balance = 0
         staked_balance = self.get_stake_balance()
-        for transaction in self.transactions:
-            print("---",jsonpickle.encode(transaction))
-            # print("--- TO KLEIDI ---",self.public_key)
-            if transaction.sender_address != 0:
-                if transaction.type_of_transaction == "first":
-                    if transaction.sender_address == self.public_key:
-                        balance -= transaction.amount
-                    elif transaction.receiver_address == self.public_key:
-                        balance += transaction.amount
-            if transaction.type_of_transaction == "coins":
-                if transaction.sender_address == self.public_key:
-                    balance -= int(1.03*transaction.amount)
-                elif transaction.receiver_address == self.public_key:
-                    balance += transaction.amount
-            if transaction.type_of_transaction == "message":
-                if transaction.sender_address == self.public_key:
-                    balance -= transaction.amount
-                    
+        # for transaction in self.transactions:
+        #     # print("---",jsonpickle.encode(transaction))
+        #     # print("--- TO KLEIDI ---",self.public_key)
+        #     if transaction.sender_address != 0:
+        #         if transaction.type_of_transaction == "first":
+        #             if transaction.sender_address == self.public_key:
+        #                 balance -= transaction.amount
+        #             elif transaction.receiver_address == self.public_key:
+        #                 balance += transaction.amount
+        #     if transaction.type_of_transaction == "coins":
+        #         if transaction.sender_address == self.public_key:
+        #             balance -= int(1.03*transaction.amount)
+        #         elif transaction.receiver_address == self.public_key:
+        #             balance += transaction.amount
+        #     if transaction.type_of_transaction == "message":
+        #         if transaction.sender_address == self.public_key:
+        #             balance -= transaction.amount
+        balance = node.balance    
         return balance - abs(staked_balance)

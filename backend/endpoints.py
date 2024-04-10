@@ -81,6 +81,7 @@ def register_node():
                 node.create_transaction(state_node['public_key'], 'first', 1000, "-")
                 print("Sent 1000 BCC to node ", state_node["id"])
 
+
     return jsonify({'id': node_id}), 200
 
 @rest_api.route('/', methods=['GET', 'POST'])
@@ -120,6 +121,8 @@ def get_transaction():
     #     return jsonify({'message': "OK"}), 200
     # else:
     #     return jsonify({'message': "The block was not added"}), 401
+    if new_transaction.type_of_transaction =='coins' or new_transaction.type_of_transaction =='first':
+        node.balance += new_transaction.amount
     node.add_transaction_to_block(new_transaction)
     return jsonify({'message': "OK"}), 200
     # else:
@@ -200,9 +203,9 @@ def create_transaction():
             receiver_public_key = state_node['public_key']
     if (receiver_public_key and receiver_id != node.id):
         if node.create_transaction(receiver_public_key, type_of_transaction, amount, message):
-            return jsonify({'message': 'The transaction was successful.', 'balance': node.wallet.get_balance()}), 200
+            return jsonify({'message': 'The transaction was successful.', 'balance': node.wallet.get_balance(node)}), 200
         else:
-            return jsonify({'message': 'Not enough BCCs.', 'balance': node.wallet.get_balance()}), 400
+            return jsonify({'message': 'Not enough BCCs.', 'balance': node.wallet.get_balance(node)}), 400
     else:
         return jsonify({'message': 'Transaction failed. Wrong receiver id.'}), 400
 
@@ -214,7 +217,7 @@ def get_balance():
         Returns:
             message: the current balance.
     '''
-    return jsonify({'message': 'Current balance: ', 'balance': node.wallet.get_balance()})
+    return jsonify({'message': 'Current balance: ', 'balance': node.wallet.get_balance(node)})
 
 
 @rest_api.route('/api/get_stake_balance', methods=['GET'])

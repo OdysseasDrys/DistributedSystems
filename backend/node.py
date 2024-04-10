@@ -48,14 +48,16 @@ class Node:
     
     def create_new_block(self):
         """Creates a new block for the blockchain."""
-        if len(self.blockchain.blocks) == 0:
+        if len(self.blockchain.blocks) == 0: #meaning genesis block
             index = 0
             previous_hash = 1
             self.current_block = Block(index, previous_hash, self.capacity)
+            
         else:
-            index = len(self.blockchain.blocks) + 1
+            index = len(self.blockchain.blocks) 
             previous_hash= self.blockchain.blocks[-1].calculate_hash()
             self.current_block = Block(index, previous_hash, self.capacity)
+            print("block index:", index)
         return self.current_block
 
     def create_transaction(self, receiver_address, type_of_transaction, amount, message):
@@ -65,18 +67,24 @@ class Node:
         #     self.wallet.nonce += 1
         #     transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, None, self.wallet.nonce)
         #     self.balance -= amount
-
+        # self.balance = self.wallet.get_balance()
+        print("---self.balance", self.balance)
         if receiver_address != 0:
+            
             if type_of_transaction == 'first':
+                print("--self.balance: ",self.balance," amount: ",amount)
                 self.wallet.nonce += 1
                 transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, "-", self.wallet.nonce)
                 #print("Transaction initialized", jsonpickle.encode(transaction))
                 transaction.sign_transaction(self.wallet.private_key)
                 self.balance -= amount
             if type_of_transaction == 'coins':
+                # print("--self.balance: ",self.balance," amount: ",amount)
                 #print("--start")
                 fee = 0.03*amount
+                print("self.balance: ",self.balance," amount: ",amount," fee: ",fee)
                 if (self.balance >= (amount+fee)):
+                    
                     self.wallet.nonce += 1
                     transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, "-", self.wallet.nonce)
                     #print("Transaction initialized", jsonpickle.encode(transaction))
@@ -112,7 +120,7 @@ class Node:
                 
         # print("Transaction initialized", transaction)
         
-
+        # print("--- receiver adress:", receiver_address)
         return self.broadcast_transaction(transaction)
               
   
@@ -168,9 +176,12 @@ class Node:
 
         #if not flag:
         if not self.add_transaction_to_block(transaction): 
+            print("Starting Validation Process")
             validator = self.proof_of_stake()
+            print("Validator id: ", validator)
             print("---- validator id" , validator)
-            self.broadcast_block(validator)  
+            self.broadcast_block(validator) 
+            print("Broadcasted Block")
             
         
         return True
@@ -201,6 +212,7 @@ class Node:
                 self.balance += self.current_block.fees
                 self.blockchain.add_block(self.current_block)            
                 self.create_new_block()
+                print("Created new Block")
         return True
 
     def validate_transaction(self, transaction):
@@ -223,6 +235,7 @@ class Node:
                 if transaction.type_of_transaction == "message":
                     full_amount = len(transaction.message)
                 if node['balance'] >= full_amount:
+                    self.current_block.add_transaction(transaction)
                     return True
         return False
     
@@ -262,7 +275,9 @@ class Node:
         # Update the balance of the recipient and the sender.
         if self.current_block is None:
             self.current_block = self.create_new_block()
-
+        
+        # print("capacity: ", self.capacity)
+        print("TO BLOCK EXEI MESA ",len(self.current_block.transactions), "TRANS")
         if len(self.current_block.transactions) < self.capacity:
             for node in self.state:            
                 if transaction.type_of_transaction == 'message':
@@ -315,5 +330,5 @@ class Node:
         requests.post(address + '/get_blockchain', data=pickle.dumps(self.blockchain))
         # requests.post(address + '/get_blockchain', data=jsonpickle.encode(self.blockchain))
 
-
+    
         

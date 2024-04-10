@@ -31,7 +31,7 @@ class Block(object):
 
     def add_transaction(self, transaction):
         """Add a transaction to the block"""
-        print("---", self.capacity)
+        # print("---", self.capacity)
         if len(self.transactions) < self.capacity:
             self.transactions.append(transaction)
             return True
