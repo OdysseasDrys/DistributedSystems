@@ -55,7 +55,8 @@ def HomeOrExit():
             'choices': ['Home', 'Exit'],
             'filter': lambda val: val.lower()
         }]
-    HomeOrExit_a = prompt(HomeOrExit_q)['option']
+    #HomeOrExit_a = prompt(HomeOrExit_q)['option']
+    HomeOrExit_a = prompt(HomeOrExit_q)
     return HomeOrExit_a
 
 

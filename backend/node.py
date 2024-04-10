@@ -70,26 +70,26 @@ class Node:
             if type_of_transaction == 'first':
                 self.wallet.nonce += 1
                 transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, "-", self.wallet.nonce)
-                print("Transaction initialized", jsonpickle.encode(transaction))
+                #print("Transaction initialized", jsonpickle.encode(transaction))
                 transaction.sign_transaction(self.wallet.private_key)
                 self.balance -= amount
             if type_of_transaction == 'coins':
-                print("--start")
+                #print("--start")
                 fee = 0.03*amount
                 if (self.balance >= (amount+fee)):
                     self.wallet.nonce += 1
                     transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, "-", self.wallet.nonce)
-                    print("Transaction initialized", jsonpickle.encode(transaction))
+                    #print("Transaction initialized", jsonpickle.encode(transaction))
                     transaction.sign_transaction(self.wallet.private_key)
                     self.current_block.fees += fee
                     self.balance -= (fee+amount)
-                    print("---finish")
+                    #print("---finish")
             if type_of_transaction == 'message':
                 fee = len(message)
                 
                 if (self.balance >= fee):
                     transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, 0, message, self.wallet.nonce)
-                    print("Transaction initialized", jsonpickle.encode(transaction))
+                    #print("Transaction initialized", jsonpickle.encode(transaction))
                     transaction.sign_transaction(self.wallet.private_key)
                     self.current_block.fees += fee
                     self.balance -= fee
@@ -99,14 +99,14 @@ class Node:
             if amount > self.stake_amount:
                 self.wallet.nonce += 1
                 transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, "-", self.wallet.nonce)
-                print("Transaction initialized", jsonpickle.encode(transaction))
+                #print("Transaction initialized", jsonpickle.encode(transaction))
                 transaction.sign_transaction(self.wallet.private_key)
                 self.balance -= amount
                 
             elif amount < self.stake_amount:
                 self.wallet.nonce += 1
                 transaction = Transaction(receiver_address, self.wallet.public_key, type_of_transaction, amount, "-", self.wallet.nonce)
-                print("Transaction initialized", jsonpickle.encode(transaction))
+                #print("Transaction initialized", jsonpickle.encode(transaction))
                 transaction.sign_transaction(self.wallet.private_key)
                 self.balance += amount
                 
@@ -167,14 +167,14 @@ class Node:
                     pass
 
         #if not flag:
-        if not self.add_transaction_to_block(transaction): ##OXI AFTO
+        if not self.add_transaction_to_block(transaction): 
             validator = self.proof_of_stake()
             print("---- validator id" , validator)
-            self.validation_sequence(validator)  
+            self.broadcast_block(validator)  
         
         return True
 
-    def validation_sequence(self, validator):
+    def broadcast_block(self, validator):
 
         self.state = self.calculate_state()
         self.current_block.state = self.state
@@ -185,9 +185,9 @@ class Node:
             broadcasted = True
             for node in self.state:
                 if node["id"]!=self.id:
-                    
+                    address = 'http://' + node['ip'] + ':' + node['port']
                     response = self.requests.post(address + '/get_block',
-                                         data=pickle.dumps(block))
+                                         data=pickle.dumps(self.current_block))
                     responses.append(response)
             
             for res in responses:
@@ -201,24 +201,6 @@ class Node:
                 self.blockchain.add_block(self.current_block)            
                 self.create_new_block()
         return True
-    
-    def broadcast_block(self, ip, port):
-        block_data = {
-            'index': self.index,
-            'timestamp': self.timestamp,
-            'transactions': self.transactions,
-            'validator': self.validator,
-            'previous_hash': self.previous_hash,
-            'capacity': self.capacity,
-            'fees': self.fees
-        }
-        address = 'http://' + ip + ':' + port + '/get_block'
-        # Serialize the block_data dictionary to bytes using pickle.dumps
-        block_bytes = pickle.dumps(block_data)
-        # Send the pickled data as the payload
-        response = requests.post(address, data=block_bytes)
-        return response.status_code
-
 
     def validate_transaction(self, transaction):
         """Validates an incoming transaction.
@@ -295,6 +277,7 @@ class Node:
                     continue
             return True
         else: 
+            print("-------new_block--------")
             # validator = self.proof_of_stake()
             # self.validation_sequence(validator) 
             return False
