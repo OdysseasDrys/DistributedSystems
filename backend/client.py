@@ -19,10 +19,10 @@ else:
     IPAddr = socket.gethostbyname(hostname)
 
 style = style_from_dict({
-    Token.QuestionMark: '#E91E63 bold',
-    Token.Selected: '#673AB7 bold',
+    Token.QuestionMark: '#1ee9d8 bold',
+    Token.Selected: '#c98c1a bold',
     Token.Instruction: '',  # default
-    Token.Answer: '#2196f3 bold',
+    Token.Answer: '#a9c91a bold',
     Token.Question: '',
 })
 
@@ -71,11 +71,11 @@ def client():
                 'type': 'list',
                 'name': 'method',
                 'message': 'What would you like to do?',
-                'choices': ['New transaction (coins)', 'New transaction (message)', 'Stake/Unstake', 'View last transactions', 'Show balance', 'Help', 'Exit'],
+                'choices': ['New transaction (coins)', 'New transaction (message)', 'Stake/Unstake', 'View last transactions','View wallet transactions', 'Show balance', 'Help', 'Exit'],
                 'filter': lambda val: val.lower()
             }]
         method_a = prompt(method_q, style=style)["method"]
-        os.system('cls||clear')
+        # os.system('cls||clear')
         if method_a == 'new transaction (coins)':
             print("New transaction (coins)!")
             print(
@@ -97,13 +97,14 @@ def client():
                 }]
             transaction_a = prompt(transaction_q, style=style)
             transaction_a['type_of_transaction'] = 'coins'
+            transaction_a['stake'] = "nostake"
             print(transaction_a)
             print("\nConfirmation:")
             confirmation_q = [
                 {
                     'type': 'confirm',
                     'name': 'confirm',
-                    'message': 'Do you want to send ' + str(transaction_a["amount"]) + ' BCCs to node ' + str(transaction_a["receiver"]) + '?',
+                    'message': 'Do you want to send ' + str(transaction_a["amount"]) + ' BCCs to node ' + str(transaction_a["receiver"]) + ' (fee: '+ str(transaction_a["amount"]*0.03) + ')?',
                     'default': False
                 }
             ]
@@ -128,8 +129,8 @@ def client():
                     print("\nNode is not active. Try again later.\n")
                 if HomeOrExit() == 'exit':
                     break
-                else:
-                    os.system('cls||clear')
+                # else:
+                    # os.system('cls||clear')
             else:
                 print("\nTransaction aborted.")
 
@@ -154,13 +155,14 @@ def client():
                 }]
             transaction_a = prompt(transaction_q, style=style)
             transaction_a['type_of_transaction'] = 'message'
+            transaction_a['stake'] = "nostake"
             print(transaction_a)
             print("\nConfirmation:")
             confirmation_q = [
                 {
                     'type': 'confirm',
                     'name': 'confirm',
-                    'message': 'Do you want to send the message "' + str(transaction_a["message"]) + '" to node ' + str(transaction_a["receiver"]) + '?',
+                    'message': 'Do you want to send the message "' + str(transaction_a["message"]) + '" to node ' + str(transaction_a["receiver"]) + ' (fee: '+ str(len(transaction_a["message"])) + ')?',
                     'default': False
                 }
             ]
@@ -185,8 +187,8 @@ def client():
                     print("\nNode is not active. Try again later.\n")
                 if HomeOrExit() == 'exit':
                     break
-                else:
-                    os.system('cls||clear')
+                # else:
+                    # os.system('cls||clear')
             else:
                 print("\nTransaction aborted.")
 
@@ -195,54 +197,139 @@ def client():
             print(
                 "----------------------------------------------------------------------\n")
             address = 'http://' + IPAddr + ':' + \
-                str(PORT) + '/api/get_transactions'
+                    str(PORT) + '/api/get_transactions'
             try:
                 response = requests.get(address)
-                print('1')
                 # print(response.content)
                 data= jsonpickle.decode(response.content)
-                print(data)
-                data = pickle.loads(response.content)
-                print('2')
+                
+                # print(data)
+                # data = pickle.loads(response.content)
                 table = Texttable()
-                print('3')
                 table.set_deco(Texttable.HEADER)
-                print('4')
                 table.set_cols_dtype(['t',  # text
                                       't',  # text
                                       't',  # text
+                                    #   't',  # text
+                                    #   't',  # text
+                                    #   't',  # text
                                       't',  # text
                                       't'])  # text
-                table.set_cols_align(["c", "c", "c", "c", "c","c"])
-                headers = ["Sender ID", "Receiver ID","Type of transaction", "Amount or message", "BCC used"]
+               
+                table.set_cols_align(["c","c", "c", "c", "c"])
+                headers = ["Sender ID", "Receiver ID","Type of transaction", "Amount", "Message"]
                 rows = []
                 rows.append(headers)
                 rows.extend(data)
                 table.add_rows(rows)
                 print(table.draw() + "\n")
+            except KeyError:
+                pass
             except:
                 print("Node is not active. Try again later.\n")
             if HomeOrExit() == 'exit':
                 break
-            else:
-                os.system('cls||clear')
+            # else:
+                # os.system('cls||clear')
+        elif method_a == 'view wallet transactions':
+            print("All transactions of the wallet")
+            print(
+                "----------------------------------------------------------------------\n")
+            address = 'http://' + IPAddr + ':' + \
+                    str(PORT) + '/api/get_my_transactions'
+            try:
+                response = requests.get(address)
+                # print(response.content)
+                data= jsonpickle.decode(response.content)
+                
+                # print(data)
+                # data = pickle.loads(response.content)
+                table = Texttable()
+                table.set_deco(Texttable.HEADER)
+                table.set_cols_dtype(['t',  # text
+                                      't',  # text
+                                      't',  # text
+                                    #   't',  # text
+                                    #   't',  # text
+                                    #   't',  # text
+                                      't',  # text
+                                      't'])  # text
+               
+                table.set_cols_align(["c","c", "c", "c", "c"])
+                headers = ["Sender ID", "Receiver ID","Type of transaction", "Amount", "Message"]
+                rows = []
+                rows.append(headers)
+                rows.extend(data)
+                table.add_rows(rows)
+                print(table.draw() + "\n")
+            except KeyError:
+                pass
+            except:
+                print("Node is not active. Try again later.\n")
+            if HomeOrExit() == 'exit':
+                break
+            # else:
+                # os.system('cls||clear')
         elif method_a == 'stake/unstake':
+
             print("Stake amount for the node")
             print(
                 "----------------------------------------------------------------------\n")
             address = 'http://' + IPAddr + ':' + \
                 str(PORT) + '/api/get_stake_balance'
-            try:
-                response = requests.get(address).json()
-                message = response['message']
-                balance = str(response['balance'])
-                print(message + balance + ' BCCs staked\n') #todo: stake/unstake, if amount>stake transaction to node 0, else transaction from node 0
-            except:
-                print("Node is not active. Try again later.\n")
-            if HomeOrExit() == 'exit':
-                break
+                # try:
+            response = requests.get(address).json()
+            message = response['message']
+            balance = str(response['balance'])
+            print(message + balance + ' BCCs staked\n')
+            transaction_a = {}
+            transaction_a['receiver_address'] = 0
+            transaction_q = [{
+                    'type': 'input',
+                    'name': 'amount',
+                    'message': 'Set stake amount for node to:',
+                    'validate': NumberValidator,
+                    'filter': lambda val: int(val)
+                }]
+            transaction_a['amount'] = prompt(transaction_q, style=style)['amount']
+            transaction_a['type_of_transaction'] = 'coins'
+            transaction_a['stake'] = "yesstake"
+            print(transaction_a)
+
+            print("\nConfirmation:")
+            confirmation_q = [
+                {
+                    'type': 'confirm',
+                    'name': 'confirm',
+                    'message': 'Do you want to set the stake for the node to ' + str(transaction_a["amount"]) + ' BCCs?',
+                    'default': False
+                }
+            ]
+            confirmation_a = prompt(confirmation_q)["confirm"]
+            if confirmation_a:
+                address = 'http://' + IPAddr + ':' + \
+                    str(PORT) + '/api/create_transaction'
+                try:
+                    response = requests.post(
+                        address, data=transaction_a).json()
+                    message = response["message"]
+                    print("\n" + message + '\n')
+                    try:
+                        balance = response["balance"]
+                        print("----------------------------------")
+                        print("Your current balance is: " +
+                              str(balance) + " BCCs")
+                        print("----------------------------------\n")
+                    except KeyError:
+                        pass
+                except:
+                    print("\nNode is not active. Try again later.\n")
+                if HomeOrExit() == 'exit':
+                    break
+                # else:
+                    # os.system('cls||clear')
             else:
-                os.system('cls||clear')
+                print("\Staking aborted.")
 
         elif method_a == 'show balance':
             print("Your balance")
@@ -258,8 +345,8 @@ def client():
                 print("Node is not active. Try again later.\n")
             if HomeOrExit() == 'exit':
                 break
-            else:
-                os.system('cls||clear')
+            # else:
+                # os.system('cls||clear')
         elif method_a == 'help':
             print("Help")
             print(
@@ -268,13 +355,14 @@ def client():
             print("- New transaction: Creates a new transaction. You are asked for the type of transaction and then for the id of the receiver node and the amount of BCCs or message you want to send.")
             print("- Stake/Unstake: View the current staked amount of this node and choose the new stake amount you want to set.")
             print("- View last transactions: Prints the transactions of the last validated block of the Blockchat blockchain.")
+            print("- View wallet transactions: Prints the transactions of the wallet.")
             print("- Show balance: Prints the current balance of your wallet.")
             print("- Help: Prints usage information about the options.\n")
 
             if HomeOrExit() == 'Exit':
                 break
-            else:
-                os.system('cls||clear')
+            # else:
+                # os.system('cls||clear')
 
         else:
             break

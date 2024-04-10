@@ -3,6 +3,7 @@ import node
 import jsonpickle
 import requests
 
+
     
 from flask import Blueprint, jsonify, request
 
@@ -28,11 +29,15 @@ def get_block():
             message: the outcome of the procedure.
     '''
     new_block = pickle.loads(request.get_data())
-    last_block = node.blockchain.blocks[-1]
-    if node.current_block.previous_hash == last_block.current_hash:    # validation procedure of the block (check prev hash)
-        node.blockchain.blocks.append(new_block)
-
+    
+    
+    #if node.current_block.previous_hash == last_block.current_hash:    # validation procedure of the block (check prev hash)
+    node.blockchain.blocks.append(new_block)
+    node.create_new_block()
+    print("------ Successfully added block")
     return jsonify({'message': "OK"}), 200
+    #else:
+     #   return jsonify({'mesage': "Block rejected."}), 409
 
 @rest_api.route('/register_node', methods=['POST'])
 def register_node():
@@ -80,6 +85,14 @@ def register_node():
             if state_node['id'] != node.id:
                 node.create_transaction(state_node['public_key'], 'first', 1000, "-")
                 print("Sent 1000 BCC to node ", state_node["id"])
+                
+                # address = 'http://' + state_node['ip'] + ':' + state_node['port']
+                # response = requests.post(address + '/get_block',
+                #                          data=pickle.dumps(node.current_block))
+                # if response.status_code != 200:
+                #     print("Failed to send block")
+                #     break          
+                
 
 
     return jsonify({'id': node_id}), 200
@@ -98,10 +111,12 @@ def validate_transaction():
         Returns:
             message: the outcome of the procedure.
     '''
+   
     new_transaction = pickle.loads(request.get_data())
     if node.validate_transaction(new_transaction):
         return jsonify({'message': "OK"}), 200
     else:
+        print("eimai sto endpoint")
         return jsonify({'message': "The signature is not authentic"}), 401
 
 
@@ -121,9 +136,19 @@ def get_transaction():
     #     return jsonify({'message': "OK"}), 200
     # else:
     #     return jsonify({'message': "The block was not added"}), 401
-    if new_transaction.type_of_transaction =='coins' or new_transaction.type_of_transaction =='first':
-        node.balance += new_transaction.amount
-    node.add_transaction_to_block(new_transaction)
+    if (node.wallet.public_key == new_transaction.receiver_address):
+        if (new_transaction.type_of_transaction =='coins' or new_transaction.type_of_transaction =='first'):
+            node.balance += new_transaction.amount
+
+
+    #node.add_transaction_to_block(new_transaction)
+    if not node.add_transaction_to_block(new_transaction): 
+            
+            print("-------new_block--------")
+            validator = node.proof_of_stake()
+            print("------", validator)
+            node.broadcast_block(validator) 
+            print("Broadcasted Block")  
     return jsonify({'message': "OK"}), 200
     # else:
     #     return jsonify({'message': "The block was not added"}), 401
@@ -168,7 +193,7 @@ def send_chain():
             the blockchain of the node in pickle format.
     '''
     return jsonpickle.encode(node.blockchain)
-    return pickle.dumps(node.blockchain)
+    #return pickle.dumps(node.blockchain)
 
 
 ##############################################################
@@ -190,24 +215,38 @@ def create_transaction():
     '''
 
     # Get the arguments.
-    receiver_id = int(request.form.get('receiver'))
+    stake = request.form.get('stake')
+    #print("--- is it stake:", stake)
     type_of_transaction = request.form.get('type_of_transaction')
     amount = request.form.get('amount')
     if amount != None:
-        amount = int(amount)
+            amount = int(amount)
     message = request.form.get('message')
-    # Find the address of the receiver.
-    receiver_public_key = None
-    for state_node in node.state:
-        if (state_node['id'] == receiver_id):
-            receiver_public_key = state_node['public_key']
-    if (receiver_public_key and receiver_id != node.id):
-        if node.create_transaction(receiver_public_key, type_of_transaction, amount, message):
-            return jsonify({'message': 'The transaction was successful.', 'balance': node.wallet.get_balance(node)}), 200
+    #print("--- amount is ", amount)
+    if stake == 'nostake':
+        receiver_id = int(request.form.get('receiver'))
+        # Find the address of the receiver.
+        receiver_public_key = None
+        for state_node in node.state:
+            if (state_node['id'] == receiver_id):
+                receiver_public_key = state_node['public_key']
+    
+        if (receiver_public_key and receiver_id != node.id):
+            if node.create_transaction(receiver_public_key, type_of_transaction, amount, message):
+                return jsonify({'message': 'The transaction was successful.', 'balance': node.wallet.get_balance(node)}), 200
+            else:
+                return jsonify({'message': 'Not enough BCCs.', 'balance': node.wallet.get_balance(node)}), 400
         else:
-            return jsonify({'message': 'Not enough BCCs.', 'balance': node.wallet.get_balance(node)}), 400
-    else:
-        return jsonify({'message': 'Transaction failed. Wrong receiver id.'}), 400
+            return jsonify({'message': 'Transaction failed. Wrong receiver id.'}), 400
+    elif stake == 'yesstake':
+        receiver_public_key = 0
+        try: 
+            if node.create_transaction(receiver_public_key, type_of_transaction, amount, message):
+                return jsonify({'message': 'The transaction was successful.', 'balance': node.wallet.get_balance(node)}), 200
+            else:
+                return jsonify({'message': 'Not enough BCCs.', 'balance': node.wallet.get_balance(node)}), 400
+        except:
+            return jsonify({'message': 'Transaction failed. Wrong receiver id.'}), 400
 
 
 @rest_api.route('/api/get_balance', methods=['GET'])
@@ -227,7 +266,7 @@ def get_stake_balance():
         Returns:
             message: the current stake balance.
     '''
-    return jsonify({'message': 'Current stake balance: ', 'balance': node.wallet.get_stake_balance()})
+    return jsonify({'message': 'Current stake balance: ', 'balance': node.wallet.get_stake_balance(node)})
 
 @rest_api.route('/api/get_transactions', methods=['GET'])
 def get_transactions():
@@ -236,12 +275,13 @@ def get_transactions():
         Returns:
             a formatted list of transactions in pickle format.
     '''
-    if len(node.blockchain.blocks[-1].transactions)==0:
-        return jsonify({'message': 'There are no transactions in the last block.'}), 400
-    else:
+    #if len(node.blockchain.blocks[-1].transactions)==0:
+     #   return jsonify({'message': 'There are no transactions in the last block.'}), 400
+    #else:
         # return jsonpickle.encode(node.blockchain.blocks[-1].transactions)
-        return jsonpickle.encode([transaction.to_list() for transaction in node.blockchain.blocks[-1].transactions])
-        return jsonify(len(node.blockchain.blocks[-1].transactions)) # comment the above to see the number of transactions in the last block
+    print(node.blockchain.blocks)
+    return jsonpickle.encode([transaction.to_list() for transaction in node.blockchain.blocks[-1].transactions])
+        #return jsonify(len(node.blockchain.blocks[-1].transactions)) # comment the above to see the number of transactions in the last block
 
 
 @rest_api.route('/api/get_my_transactions', methods=['GET'])

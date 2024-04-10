@@ -98,7 +98,7 @@ if __name__ == '__main__':
         """
 
         # Define the register address outside the function
-        get_block_address = "https://"+ BOOTSTRAP_IP +":"+ BOOTSTRAP_PORT+'/get_block'
+        
         register_address = 'http://' + BOOTSTRAP_IP + ':' + BOOTSTRAP_PORT + '/register_node'
         # print(node.wallet.public_key)
         def thread_function():

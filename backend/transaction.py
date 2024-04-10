@@ -24,16 +24,14 @@ class Transaction:
         self.transaction_id = self.get_hash()
         self.Signature = None
         self.type_of_transaction = type_of_transaction
-        if self.type_of_transaction == 'first':
+        self.amount = amount
+        self.message = message
+        if self.type_of_transaction == ('first' or 'coins'):
             self.amount = amount
-            self.message = "-"
-        elif self.type_of_transaction == 'coins':
-            self.amount = amount
-            self.message = "-"
+            self.message = ""       
         elif self.type_of_transaction == 'message':
             self.message = message
             self.amount = 0
-        # self.fee = 0
 
     def sign_transaction(self, private_key):
         """Sign the current transaction with the given private key."""
@@ -63,7 +61,4 @@ class Transaction:
         
     def to_list(self):
         """Converts a Transaction object into a list."""
-        if self.type_of_transaction == "coins":
-            return [self.sender_address, self.receiver_address, self.type_of_transaction, self.amount]
-        else:
-            return [self.sender_address, self.receiver_address, self.type_of_transaction, self.message]
+        return [self.sender_address, self.receiver_address, self.type_of_transaction, self.amount, self.message]

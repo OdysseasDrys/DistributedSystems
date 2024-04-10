@@ -71,23 +71,24 @@ class Wallet:
         self.transactions.append(transaction)
 
     
-    def get_stake_balance(self):
+    def get_stake_balance(self,node):
         """
         Get the stake balance of the wallet
         """
-        stake_balance = 0
-        for transaction in self.transactions:
-            if transaction.receiver_address == 0 and transaction.nonce != 0: # to avoid first transaction
-                stake_balance = 0
-                stake_balance += transaction.amount
-        return abs(stake_balance)
+        # stake_balance = 0
+        # for transaction in self.transactions:
+        #     if transaction.receiver_address == 0 and transaction.nonce != 0: # to avoid first transaction
+        #         stake_balance = 0
+        #         stake_balance += transaction.amount
+        # return abs(stake_balance)
+        return node.stake_amount
     
     def get_balance(self,node):
         """
         Get the balance of the wallet
         """
-        balance = 0
-        staked_balance = self.get_stake_balance()
+        #balance = 0
+        #staked_balance = self.get_stake_balance()
         # for transaction in self.transactions:
         #     # print("---",jsonpickle.encode(transaction))
         #     # print("--- TO KLEIDI ---",self.public_key)
@@ -105,5 +106,5 @@ class Wallet:
         #     if transaction.type_of_transaction == "message":
         #         if transaction.sender_address == self.public_key:
         #             balance -= transaction.amount
-        balance = node.balance    
-        return balance - abs(staked_balance)
+          
+        return node.balance #- abs(staked_balance)
