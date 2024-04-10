@@ -26,13 +26,14 @@ class Transaction:
         self.type_of_transaction = type_of_transaction
         if self.type_of_transaction == 'first':
             self.amount = amount
-            self.message = None
+            self.message = "-"
         elif self.type_of_transaction == 'coins':
             self.amount = amount
-            self.message = None
+            self.message = "-"
         elif self.type_of_transaction == 'message':
             self.message = message
-            self.amount = None
+            self.amount = 0
+        # self.fee = 0
 
     def sign_transaction(self, private_key):
         """Sign the current transaction with the given private key."""

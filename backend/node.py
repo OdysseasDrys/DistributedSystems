@@ -74,6 +74,7 @@ class Node:
                 transaction.sign_transaction(self.wallet.private_key)
                 self.balance -= amount
             if type_of_transaction == 'coins':
+                print("--start")
                 fee = 0.03*amount
                 if (self.balance >= (amount+fee)):
                     self.wallet.nonce += 1
@@ -81,9 +82,11 @@ class Node:
                     print("Transaction initialized", jsonpickle.encode(transaction))
                     transaction.sign_transaction(self.wallet.private_key)
                     self.current_block.fees += fee
-                    self.balance -= fee+amount
+                    self.balance -= (fee+amount)
+                    print("---finish")
             if type_of_transaction == 'message':
                 fee = len(message)
+                
                 if (self.balance >= fee):
                     transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, 0, message, self.wallet.nonce)
                     print("Transaction initialized", jsonpickle.encode(transaction))
@@ -105,15 +108,13 @@ class Node:
                 transaction = Transaction(receiver_address, self.wallet.public_key, type_of_transaction, amount, "-", self.wallet.nonce)
                 print("Transaction initialized", jsonpickle.encode(transaction))
                 transaction.sign_transaction(self.wallet.private_key)
-                self.balance -= amount
+                self.balance += amount
                 
         # print("Transaction initialized", transaction)
         
 
-        if self.broadcast_transaction(transaction):
-            return True
-        else:
-            return False         
+        return self.broadcast_transaction(transaction)
+              
   
     def stake(self, amount):
         """Set the node's stake."""
@@ -135,34 +136,40 @@ class Node:
         has the available tokens to do the transaction
         If the transaction is realisable, the nodes respond with 200 OK.
         """
+        flag=True
         for node in self.state:
-            try:
-                address = 'http://' + node['ip'] + ':' + node['port']
-                response = requests.post(address + '/validate_transaction',
-                                         data=pickle.dumps(transaction))
-                if response.status_code != 200:
-                    print(f'broadcast: Request "{node["ip"]}/{node["port"]}" failed')
-                
+            if node['id'] != self.id:
+                try:
+                    address = 'http://' + node['ip'] + ':' + node['port']
+                    response = requests.post(address + '/validate_transaction',
+                                             data=pickle.dumps(transaction))
+                    if response.status_code != 200:
+                        print(f'broadcast: Request "{node["ip"]}/{node["port"]}" failed')
 
-            except requests.exceptions.Timeout:
-                print(f'broadcast: Request "{node["ip"]}/{node["port"]}" timed out')
-                pass
+
+                except requests.exceptions.Timeout:
+                    print(f'broadcast: Request "{node["ip"]}/{node["port"]}" timed out')
+                    pass
         
         for node in self.state:
-            try:
-                address = 'http://' + node['ip'] + ':' + node['port']
-                response = requests.post(address + '/get_transaction',
-                                         data=pickle.dumps(transaction))
-                if response.status_code != 200:
-                    print(f'broadcast: Request "{node["ip"]}/{node["port"]}" failed')
-                
+            if node['id'] != self.id:
+                try:
+                    address = 'http://' + node['ip'] + ':' + node['port']
+                    response = requests.post(address + '/get_transaction',
+                                             data=pickle.dumps(transaction))
+                    if response.status_code != 200:
+                        flag=False
+                        print(f'broadcast: Request "{node["ip"]}/{node["port"]}" failed')
+                    
+    
+                except requests.exceptions.Timeout:
+                    print(f'broadcast: Request "{node["ip"]}/{node["port"]}" timed out')
+                    pass
 
-            except requests.exceptions.Timeout:
-                print(f'broadcast: Request "{node["ip"]}/{node["port"]}" timed out')
-                pass
-
-        if not self.add_transaction_to_block(transaction):
+        #if not flag:
+        if not self.add_transaction_to_block(transaction): ##OXI AFTO
             validator = self.proof_of_stake()
+            print("---- validator id" , validator)
             self.validation_sequence(validator)  
         
         return True
@@ -191,8 +198,25 @@ class Node:
                 self.balance += self.current_block.fees
                 self.blockchain.add_block(self.current_block)            
                 self.create_new_block()
-        
-        
+        return True
+    
+    def broadcast_block(self, ip, port):
+        block_data = {
+            'index': self.index,
+            'timestamp': self.timestamp,
+            'transactions': self.transactions,
+            'validator': self.validator,
+            'previous_hash': self.previous_hash,
+            'capacity': self.capacity,
+            'fees': self.fees
+        }
+        address = 'http://' + ip + ':' + port + '/get_block'
+        # Serialize the block_data dictionary to bytes using pickle.dumps
+        block_bytes = pickle.dumps(block_data)
+        # Send the pickled data as the payload
+        response = requests.post(address, data=block_bytes)
+        return response.status_code
+
 
     def validate_transaction(self, transaction):
         """Validates an incoming transaction.
@@ -209,7 +233,7 @@ class Node:
             if node['public_key'] == transaction.sender_address:
                 if transaction.type_of_transaction == "first":
                     full_amount = transaction.amount
-                if transaction.type_of_transaction == "coins":                
+                elif transaction.type_of_transaction == "coins":                
                     full_amount = 1.03*transaction.amount 
                 if transaction.type_of_transaction == "message":
                     full_amount = len(transaction.message)
@@ -241,13 +265,20 @@ class Node:
         
         #if node sender or receiver add transaction 
         if (transaction.sender_address == self.wallet.public_key) or (transaction.receiver_address == self.wallet.public_key):
-             self.wallet.add_transaction_to_wallet(transaction)
-
+            # if transaction.type_of_transaction == "message":
+            #     fee = len(transaction.message)
+            # elif transaction.type_of_transaction == "coins":
+            #     fee = 1.03*transaction.amount
+            # elif transaction.type_of_transaction == "first":
+            #     fee = 0
+            # transaction.fee = fee
+            self.wallet.add_transaction_to_wallet(transaction)
+            
         # Update the balance of the recipient and the sender.
         if self.current_block is None:
             self.current_block = self.create_new_block()
 
-        if self.current_block.add_transaction(transaction):
+        if len(self.current_block.transactions) < self.capacity:
             for node in self.state:            
                 if transaction.type_of_transaction == 'message':
                     fee = len(transaction.message)
@@ -260,10 +291,11 @@ class Node:
                 if node['public_key'] == transaction.receiver_address:
                     node['balance'] += transaction.amount
                     continue
-                return True
-        else:    
-        #if not self.current_block.add_transaction(transaction):
-           return False
+            return True
+        else: 
+            # validator = self.proof_of_stake()
+            # self.validation_sequence(validator) 
+            return False
 
     def proof_of_stake(self):
             random.seed(self.current_block.previous_hash)

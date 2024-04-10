@@ -36,7 +36,7 @@ def get_block():
         # Update previous hash and index in case of insertions in the chain
         
         with node.filter_lock:
-            node.chain.blocks.append(new_block)
+            node.blockchain.blocks.append(new_block)
             node.chain_lock.release()
             node.filter_blocks(new_block)
             
@@ -50,13 +50,13 @@ def get_block():
             # Resolve conflict (multiple blockchains/branch).
             if node.resolve_conflicts(new_block):
                 # Add block to the current blockchain
-                node.stop_mining = True
+                # node.stop_mining = True
                 with node.filter_lock:
-                    node.chain.blocks.append(new_block)
+                    node.blockchain.blocks.append(new_block)
                     node.chain_lock.release()
                     # Remove the new_block's transactions from the unconfirmed_blocks of the node.
                     node.filter_blocks(new_block)
-                    node.stop_mining = False
+                    # node.stop_mining = False
             else:
                 node.chain_lock.release()
                 return jsonify({'mesage': "Block rejected."}), 409
@@ -145,9 +145,14 @@ def get_transaction():
     '''
 
     new_transaction = pickle.loads(request.get_data())
+    # if node.add_transaction_to_block(new_transaction):
+    #     return jsonify({'message': "OK"}), 200
+    # else:
+    #     return jsonify({'message': "The block was not added"}), 401
     node.add_transaction_to_block(new_transaction)
-
     return jsonify({'message': "OK"}), 200
+    # else:
+    #     return jsonify({'message': "The block was not added"}), 401
 
 @rest_api.route('/get_state', methods=['POST'])
 def get_state():
@@ -203,23 +208,27 @@ def create_transaction():
 
         Input:
             receiver: the id of the receiver node.
+            type_of_transaction: the type of the transaction.
             amount: the amount of BCCs to send.
+            message: the message of the transaction.
         Returns:
             message: the outcome of the procedure.
     '''
 
     # Get the arguments.
     receiver_id = int(request.form.get('receiver'))
-    amount = int(request.form.get('amount'))
-    type_of_transaction = int(request.form.get('type_of_transaction'))
-
+    type_of_transaction = request.form.get('type_of_transaction')
+    amount = request.form.get('amount')
+    if amount != None:
+        amount = int(amount)
+    message = request.form.get('message')
     # Find the address of the receiver.
     receiver_public_key = None
     for state_node in node.state:
         if (state_node['id'] == receiver_id):
             receiver_public_key = state_node['public_key']
     if (receiver_public_key and receiver_id != node.id):
-        if node.create_transaction(receiver_public_key, type_of_transaction, receiver_id, amount):
+        if node.create_transaction(receiver_public_key, type_of_transaction, amount, message):
             return jsonify({'message': 'The transaction was successful.', 'balance': node.wallet.get_balance()}), 200
         else:
             return jsonify({'message': 'Not enough BCCs.', 'balance': node.wallet.get_balance()}), 400

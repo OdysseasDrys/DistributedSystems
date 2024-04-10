@@ -74,7 +74,7 @@ if __name__ == '__main__':
         
 
         # Adds the first and only transaction in the genesis block.
-        first_transaction = Transaction(sender_address="0", receiver_address=node.wallet.public_key, type_of_transaction="first", amount=1000*endpoints.n, message=None, nonce=0, Signature=None)
+        first_transaction = Transaction(sender_address="0", receiver_address=node.wallet.public_key, type_of_transaction="first", amount=1000*endpoints.n, message="-", nonce=0, Signature=None)
         node.balance = 1000*endpoints.n
         print("nodes: ",endpoints.n)
         
@@ -97,13 +97,14 @@ if __name__ == '__main__':
         """
 
         # Define the register address outside the function
+        get_block_address = "https://"+ BOOTSTRAP_IP +":"+ BOOTSTRAP_PORT+'/get_block'
         register_address = 'http://' + BOOTSTRAP_IP + ':' + BOOTSTRAP_PORT + '/register_node'
         print(node.wallet.public_key)
         def thread_function():
             time.sleep(2)
             response = requests.post(register_address,
                                 data={'public_key': node.wallet.public_key, 'ip': BOOTSTRAP_IP, 'port': port})
-
+            
             if response.status_code == 200:
                 print("Node initialized")
             else:

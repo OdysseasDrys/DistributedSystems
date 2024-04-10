@@ -3,6 +3,7 @@ import socket
 import pickle
 import os
 import config
+import jsonpickle
 
 from PyInquirer import style_from_dict, Token, prompt
 from PyInquirer import Validator, ValidationError
@@ -34,6 +35,15 @@ class NumberValidator(Validator):
             raise ValidationError(
                 message='Please enter a number',
                 cursor_position=len(document.text))
+        
+class TextValidator(Validator):
+    def validate(self, document):
+        try:
+            str(document.text)
+        except ValueError:
+            raise ValidationError(
+                message='Please enter a string',
+                cursor_position=len(document.text))
 
 
 def HomeOrExit():
@@ -51,7 +61,7 @@ def HomeOrExit():
 
 def client():
     print('Initializing node...\n')
-    sleep(2)
+    sleep(1)
     print("Node initialized!\n")
     while True:
         print("----------------------------------------------------------------------")
@@ -85,6 +95,8 @@ def client():
                     'filter': lambda val: int(val)
                 }]
             transaction_a = prompt(transaction_q, style=style)
+            transaction_a['type_of_transaction'] = 'coins'
+            print(transaction_a)
             print("\nConfirmation:")
             confirmation_q = [
                 {
@@ -136,10 +148,12 @@ def client():
                     'type': 'input',
                     'name': 'message',
                     'message': 'Message:',
-                    'validate': NumberValidator,
-                    'filter': lambda val: int(val)
+                    'validate': TextValidator,
+                    'filter': lambda val: str(val)
                 }]
             transaction_a = prompt(transaction_q, style=style)
+            transaction_a['type_of_transaction'] = 'message'
+            print(transaction_a)
             print("\nConfirmation:")
             confirmation_q = [
                 {
@@ -183,9 +197,16 @@ def client():
                 str(PORT) + '/api/get_transactions'
             try:
                 response = requests.get(address)
-                data = pickle.loads(response._content)
+                print('1')
+                # print(response.content)
+                data= jsonpickle.decode(response.content)
+                print(data)
+                data = pickle.loads(response.content)
+                print('2')
                 table = Texttable()
+                print('3')
                 table.set_deco(Texttable.HEADER)
+                print('4')
                 table.set_cols_dtype(['t',  # text
                                       't',  # text
                                       't',  # text
