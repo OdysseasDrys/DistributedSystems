@@ -49,15 +49,18 @@ class Transaction:
 
     def verify_signature(self):
         """Verifies the signature of a transaction."""
+        if self.sender_address != 0:
+            key = RSA.importKey(self.sender_address.encode('ISO-8859-1'))
 
-        key = RSA.importKey(self.sender_address.encode('ISO-8859-1'))
-        h = SHA256.new(self.transaction_id.encode('ISO-8859-1'))
-        verifier = pss.new(key)
-        try:
-            verifier.verify(h, self.Signature.encode('ISO-8859-1'))
-            return True
-        except (ValueError, TypeError):
-            return False       
+            h = SHA256.new(self.transaction_id.encode('ISO-8859-1'))
+            verifier = pss.new(key)
+            try:
+                verifier.verify(h, self.Signature.encode('ISO-8859-1'))
+                return True
+            except (ValueError, TypeError):
+                return False
+        else:
+            return True       
         
     def to_list(self):
         """Converts a Transaction object into a list."""

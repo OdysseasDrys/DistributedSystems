@@ -6,7 +6,9 @@ import requests
 import pickle
 import random
 import jsonpickle
+import time
 from threading import Lock,Thread
+import re
 
 class Node:
     """
@@ -38,6 +40,8 @@ class Node:
         self.capacity = None
         self.state = []
         self.stake_amount = 0
+        self.validated_blocks = 0
+        self.block_time = 0
         
     def __str__(self): 
         return str(self.__class__) + ": " + str(self.__dict__)
@@ -55,11 +59,11 @@ class Node:
             self.current_block = Block(index, previous_hash, self.capacity)
             
         else:
-            print("2")
+            # print("2")
             index = len(self.blockchain.blocks)
             previous_hash= self.blockchain.blocks[-1].calculate_hash()
             self.current_block = Block(index, previous_hash, self.capacity)
-            print("block index:", index)
+            # print("block index:", index)
             
         return self.current_block
 
@@ -71,12 +75,12 @@ class Node:
         #     transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, None, self.wallet.nonce)
         #     self.balance -= amount
         # self.balance = self.wallet.get_balance()
-        print("Block Index ", self.current_block.index)
-        print("---self.balance", self.balance)
+        # print("Block Index ", self.current_block.index)
+        # print("---self.balance", self.balance)
         if receiver_address != 0:
             
             if type_of_transaction == 'first':
-                print("--self.balance: ",self.balance," amount: ",amount)
+                # print("--self.balance: ",self.balance," amount: ",amount)
                 self.wallet.nonce += 1
                 transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, "-", self.wallet.nonce)
                 #print("Transaction initialized", jsonpickle.encode(transaction))
@@ -86,7 +90,7 @@ class Node:
                 # print("--self.balance: ",self.balance," amount: ",amount)
                 #print("--start")
                 fee = 0.03*amount
-                print("self.balance: ",self.balance," amount: ",amount," fee: ",fee)
+                # print("self.balance: ",self.balance," amount: ",amount," fee: ",fee)
                 if (self.balance >= (amount+fee)):
                     
                     self.wallet.nonce += 1
@@ -108,7 +112,7 @@ class Node:
                     self.wallet.nonce += 1
               
         else: #in case it is a stake transaction 
-            print("---- amount and self.stake_amount: ", amount, self.stake_amount)
+            # print("---- amount and self.stake_amount: ", amount, self.stake_amount)
             if amount > self.stake_amount:
                 self.wallet.nonce += 1
                 amount_new = abs(amount - self.stake_amount)
@@ -118,20 +122,21 @@ class Node:
                 self.balance -= amount_new
                 self.stake_amount =  amount
                 self.state[self.id]["stake"] = amount
-                print("---self.stake_amount for amount> ssa",self.stake_amount)
+                # print("---self.stake_amount for amount> ssa",self.stake_amount)
                 
             elif amount < self.stake_amount:
                 self.wallet.nonce += 1
                 amount_new = abs(self.stake_amount - amount)
                 transaction = Transaction(receiver_address, self.wallet.public_key, type_of_transaction, amount_new, "", self.wallet.nonce)
-                print("EKANE TO TRANSACTION")
+                # print("EKANE TO TRANSACTION")
+                # print(jsonpickle.encode(transaction))
                 #print("Transaction initialized", jsonpickle.encode(transaction))
                 # transaction.sign_transaction(self.wallet.private_key)
                 # print("EKANE TO SIGN TRANSACTION")
                 self.balance += amount_new
                 self.stake_amount =  amount
                 self.state[self.id]["stake"] = amount
-                print("---self.stake_amount for amount< ssa",self.stake_amount)
+                # print("---self.stake_amount for amount< ssa",self.stake_amount)
                 
         # print("Transaction initialized", transaction)
         
@@ -139,18 +144,19 @@ class Node:
         return self.broadcast_transaction(transaction)
               
   
-    def stake(self, amount):
-        """Set the node's stake."""
-        if self.stake_amount == amount:
-            print("Amount already staked")
-            return False
-        elif self.balance > amount:
-            self.create_transaction(self.wallet.public_key, 0, 'coins', amount, None)
-            return True
-        else:
-            self.create_transaction(0,self.wallet.public_key, 'coins', amount, None)
-            print("Not enough BCC")
-            return False
+    # def stake(self, amount):
+    #     """Set the node's stake."""
+    #     if self.stake_amount == amount:
+    #         print("Amount already staked")
+    #         return False
+    #     elif self.balance > amount:
+    #         self.create_transaction(self.wallet.public_key, 0, 'coins', amount, None)
+    #         return True
+    #     else:
+    #         self.create_transaction(0,self.wallet.public_key, 'coins', amount, None)
+    #         print("Not enough BCC")
+    #         return False
+    
 
     def broadcast_transaction(self, transaction):
         """Broadcast a transaction
@@ -189,7 +195,7 @@ class Node:
         #         except requests.exceptions.Timeout:
         #             print(f'broadcast: Request "{node["ip"]}/{node["port"]}" timed out')
         #             pass
-        
+        # print("EFTASE EDW")
         def thread_func(node, responses, endpoint):
             if node['id'] != self.id:
                 address = 'http://' + node['ip'] + ':' + node['port']
@@ -204,22 +210,24 @@ class Node:
                 node, responses, '/validate_transaction'))
             threads.append(thread)
             thread.start()
-
+        # print("EFTASE EDW - 1")
         for tr in threads:
             tr.join()
-
+        # print("EFTASE EDW - 2")
+        # print(responses)
         for res in responses:
             if res != 200:
                 return False
         threads = []
         responses = []
+        # print("EFTASE EDW - 3")
         for node in self.state:
             thread = Thread(target=thread_func, args=(
                 node, responses, '/get_transaction'))
             threads.append(thread)
             thread.start()
-
-
+        # print("EFTASE EDW - 4")
+        # print("EFTASE EDW")
         # if self.current_block.index == 1:
         #     self.broadcast_block(validator)
         #     print("Broadcasted Block")
@@ -242,7 +250,8 @@ class Node:
         
             
         if self.id == validator:   #the genesis block has no validator   
-            print("I am running this")
+            # print("I am running this")
+            self.validated_blocks += 1  # number of times this node has been validator
             responses = []
             # broadcasted = False
             broadcasted = True
@@ -254,22 +263,22 @@ class Node:
                     responses.append(response)
             # print(responses) 
             for res in responses:
-                print(res)
+                # print(res)
                 
                 # if res == 200:
                 #     broadcasted = True  
                 if res.status_code != 200:
-                    print("bad response")
+                    # print("bad response")
                     broadcasted = False
                     break          
             if broadcasted:
-                print("broadcast all good, now to create a new block")
+                # print("broadcast all good, now to create a new block")
                 #if node.current_block.previous_hash == node.blockchain.blocks[-1].current_hash
-                print("Fees of the Block: ",self.current_block.fees)
+                # print("Fees of the Block: ",self.current_block.fees)
                 self.balance += self.current_block.fees
                 self.blockchain.add_block(self.current_block)            
                 self.create_new_block()
-                print("Created new Block")
+                # print("Created new Block")
 
         #self.state = self.calculate_state()
         #self.current_block.state = self.state
@@ -282,12 +291,12 @@ class Node:
         - Check that the signature matches
         - Check the the wallet of the sender has enough BCC.
         """
-
+        # print("EFTASE EDW -  79")
         if not transaction.verify_signature():            
             return False
         if self.current_block == None:            
             self.create_new_block()
-            
+        # print("EFTASE EDW -  80")   
          
         for node in self.state:
 
@@ -304,6 +313,8 @@ class Node:
                     return True
                 else:
                     return False
+            elif transaction.sender_address == 0:
+                return True
         
     
     def calculate_state(self):
@@ -329,6 +340,7 @@ class Node:
     def add_transaction_to_block(self, transaction):
         
         #if node sender or receiver add transaction 
+        # print("EFTASE EDW")
         if (transaction.sender_address == self.wallet.public_key) or (transaction.receiver_address == self.wallet.public_key):
             # if transaction.type_of_transaction == "message":
             #     fee = len(transaction.message)
@@ -337,6 +349,7 @@ class Node:
             # elif transaction.type_of_transaction == "first":
             #     fee = 0
             # transaction.fee = fee
+            # print("EFTASE EDW")
             self.wallet.add_transaction_to_wallet(transaction)
             
         # Update the balance of the recipient and the sender.
@@ -366,25 +379,26 @@ class Node:
                 self.current_block.fees += fee
             
             print("number of transactions in block",len(self.current_block.transactions))
-            print("capacity ", self.capacity)
+            #print("capacity ", self.capacity)
             return True
         else: 
             print("---full capacity")
             return False
 
     def proof_of_stake(self):
-            random.seed(self.current_block.previous_hash)
-            stakes = [node['stake'] for node in self.state]
-            total_stake = sum(stakes)
-            if total_stake == 0:
-                return random.choice(self.state)['id']  # Fallback if no stakes are present
+        random.seed(self.current_block.previous_hash)
+        stakes = [node['stake'] for node in self.state]
+        total_stake = sum(stakes)
+        if total_stake == 0:
+            return random.choice(self.state)['id']  # Fallback if no stakes are present
 
-            summ = 0
-            number = random.randint(0,total_stake)
-            for i in enumerate(stakes):
-                summ += stakes[i]
-                if number <= summ:
-                    return self.state[i]['id']
+        summ = 0
+        number = random.randint(0, total_stake)
+        for i, stake in enumerate(stakes):
+            summ += stake
+            if number <= summ:
+                return self.state[i]['id']
+
                 
     
         
@@ -406,3 +420,47 @@ class Node:
         requests.post(address + '/get_state',
                       data=pickle.dumps(self.state))
         
+    def parse_file(self):
+        input_file = f"./5nodes/trans{self.id}.txt"
+        with open(input_file, 'r') as file:
+            lines = file.readlines()
+        
+        # Regular expression pattern to match 'id' followed by a number and the message
+        pattern = r'id(\d+)\s+(.*)'
+        start_time = time.time()
+        num_of_transactions=0
+        for line in lines:
+            # Use regular expression to find matches
+            match = re.match(pattern, line)
+            if match:
+                id = int(match.group(1))
+                message = match.group(2)
+              
+            for node in self.state:
+                if node['id'] == id:
+                    self.create_transaction(node['public_key'], "message", 0, message)
+                    num_of_transactions += 1
+                    break
+            end_time = time.time()
+            duration = end_time - start_time
+            transactions_per_sec = num_of_transactions / duration
+            print("Transactions per second : ", transactions_per_sec)
+            
+
+        #     recipient_pk = None
+        #     # Retrieve the recipient public key, by its id
+        #     for pk, node_dict in self.node_ring.items():
+        #         if node_dict['id'] == id_str:
+        #             self.create_transaction(node)
+            
+        #     # TODO change this if we are running with more nodes.
+        #     #if id_str <= 'id2':
+        #     self.create_transaction(self.wallet.public_key, recipient_pk, 'message',message=message_str)
+        #     num_of_transactions = num_of_transactions + 1
+
+        # end_time = time.time()
+        # elapsed_time = end_time - start_time
+        # tps = number_of_transactions / elapsed_time
+        # block_time = self.block_elapsed_time / self.blockchain.number_of_blocks_in_blockchain()
+        # print("Transactions per second (TPS): ", tps)
+        # print("Average Block Time: ", block_time)

@@ -1,4 +1,8 @@
-TIME-python
-jsonlib
-Crypto==1.4.1
-requests
+Flask==3.0.3
+Flask_Cors==4.0.0
+jsonpickle==3.0.3
+pycryptodome==3.20.0
+PyInquirer==1.0.3
+Requests==2.31.0
+responses==0.25.0
+texttable==1.7.0

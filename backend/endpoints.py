@@ -111,12 +111,15 @@ def validate_transaction():
         Returns:
             message: the outcome of the procedure.
     '''
-   
+    # print("EFTASE EDW - 56")
     new_transaction = pickle.loads(request.get_data())
+    # print("EFTASE EDW - 57")
+    # print(new_transaction)
+    # print(jsonpickle.encode(new_transaction))
     if node.validate_transaction(new_transaction):
         return jsonify({'message': "OK"}), 200
     else:
-        print("eimai sto endpoint")
+        # print("eimai sto endpoint")
         return jsonify({'message': "The signature is not authentic"}), 401
 
 

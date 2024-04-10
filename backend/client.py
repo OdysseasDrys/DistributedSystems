@@ -294,7 +294,7 @@ def client():
             transaction_a['amount'] = prompt(transaction_q, style=style)['amount']
             transaction_a['type_of_transaction'] = 'coins'
             transaction_a['stake'] = "yesstake"
-            print(transaction_a)
+            # print(transaction_a)
 
             print("\nConfirmation:")
             confirmation_q = [
