@@ -171,6 +171,7 @@ class Node:
             validator = self.proof_of_stake()
             print("---- validator id" , validator)
             self.broadcast_block(validator)  
+            
         
         return True
 

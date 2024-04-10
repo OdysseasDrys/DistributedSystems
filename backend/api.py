@@ -78,6 +78,7 @@ if __name__ == '__main__':
         node.balance = 1000*endpoints.n
         print("nodes: ",endpoints.n)
         
+        
         genesis_block.transactions.append(first_transaction)
         genesis_block.current_hash = genesis_block.calculate_hash()
         node.wallet.transactions.append(first_transaction)

@@ -92,8 +92,18 @@ class Wallet:
             print("---",jsonpickle.encode(transaction))
             # print("--- TO KLEIDI ---",self.public_key)
             if transaction.sender_address != 0:
+                if transaction.type_of_transaction == "first":
+                    if transaction.sender_address == self.public_key:
+                        balance -= transaction.amount
+                    elif transaction.receiver_address == self.public_key:
+                        balance += transaction.amount
+            if transaction.type_of_transaction == "coins":
                 if transaction.sender_address == self.public_key:
-                    balance -= transaction.amount
+                    balance -= int(1.03*transaction.amount)
                 elif transaction.receiver_address == self.public_key:
                     balance += transaction.amount
+            if transaction.type_of_transaction == "message":
+                if transaction.sender_address == self.public_key:
+                    balance -= transaction.amount
+                    
         return balance - abs(staked_balance)
