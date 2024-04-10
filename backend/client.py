@@ -98,7 +98,7 @@ def client():
             transaction_a = prompt(transaction_q, style=style)
             transaction_a['type_of_transaction'] = 'coins'
             transaction_a['stake'] = "nostake"
-            print(transaction_a)
+            # print(transaction_a)
             print("\nConfirmation:")
             confirmation_q = [
                 {
@@ -156,7 +156,7 @@ def client():
             transaction_a = prompt(transaction_q, style=style)
             transaction_a['type_of_transaction'] = 'message'
             transaction_a['stake'] = "nostake"
-            print(transaction_a)
+            # print(transaction_a)
             print("\nConfirmation:")
             confirmation_q = [
                 {
@@ -336,6 +336,14 @@ def client():
             print(
                 "----------------------------------------------------------------------\n")
             address = 'http://' + IPAddr + ':' + str(PORT) + '/api/get_balance'
+            try:
+                response = requests.get(address).json()
+                message = response['message']
+                balance = str(response['balance'])
+                print(message + balance + ' BCCs\n')
+            except:
+                print("Node is not active. Try again later.\n")
+            address = 'http://' + IPAddr + ':' + str(PORT) + '/api/get_stake_balance'
             try:
                 response = requests.get(address).json()
                 message = response['message']

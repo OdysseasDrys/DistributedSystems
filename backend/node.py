@@ -345,22 +345,25 @@ class Node:
         
         if len(self.current_block.transactions) < self.capacity:
             print("---not full capacity")
-            for node in self.state:            
-                if transaction.type_of_transaction == 'message':
-                    fee = len(transaction.message)
+            
+            fee = 0           
+            if transaction.type_of_transaction == 'message':
+                fee = len(transaction.message)
+                
+            if transaction.type_of_transaction == 'coins':
+                fee = transaction.amount*0.03
                     
-                if transaction.type_of_transaction == 'coins':
-                    fee = transaction.amount*0.03
-
-                if node['public_key'] == transaction.sender_address:
+            for node in self.state: 
+                if node['public_key'] == transaction.sender_address and transaction.type_of_transaction != 'first':
                     node['balance'] -= fee
                     node['balance'] -= transaction.amount
 
-                    if node['public_key'] == transaction.receiver_address:
-                        node['balance'] += transaction.am
-                        
+                if node['public_key'] == transaction.receiver_address:
+                    node['balance'] += transaction.amount
+
             self.current_block.add_transaction(transaction)  
-            self.current_block.fee += fee
+            if transaction.type_of_transaction != 'first':
+                self.current_block.fees += fee
             
             print("number of transactions in block",len(self.current_block.transactions))
             print("capacity ", self.capacity)

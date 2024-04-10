@@ -19,7 +19,7 @@ else:
     IPAddr = socket.gethostbyname(hostname)
 PORT = 5000
 
-if __name__ == "__main__":
+def test_coins():
     print("---starting")
     for i in range(0,5):
         address = 'http://' + IPAddr + ':' + \
@@ -29,8 +29,29 @@ if __name__ == "__main__":
         transaction["receiver"] = 1
         transaction['type_of_transaction'] = 'coins'
         transaction['stake'] = "nostake"
-    
         response = requests.post(
             address, data=transaction).json()
         message = response["message"]
     print("\n" + message + '\n')
+    
+def test_messages():
+    print("---starting")
+    for i in range(0,5):
+        address = 'http://' + IPAddr + ':' + \
+                            str(PORT) + '/api/create_transaction'
+        transaction = {}
+        transaction["message"] = "hello"
+        transaction["receiver"] = 1
+        transaction['type_of_transaction'] = 'message'
+        transaction['stake'] = "nostake"
+        response = requests.post(
+            address, data=transaction).json()
+        message = response["message"]
+    print("\n" + message + '\n')
+
+if __name__ == "__main__":
+
+    #test_coins()
+    test_messages()
+
+
