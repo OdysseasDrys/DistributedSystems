@@ -93,7 +93,7 @@ class Node:
                     transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount, "-", self.wallet.nonce)
                     #print("Transaction initialized", jsonpickle.encode(transaction))
                     transaction.sign_transaction(self.wallet.private_key)
-                    self.current_block.fees += fee
+                    
                     self.balance -= (fee+amount)
                     #print("---finish")
             if type_of_transaction == 'message':
@@ -103,7 +103,7 @@ class Node:
                     transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, 0, message, self.wallet.nonce)
                     #print("Transaction initialized", jsonpickle.encode(transaction))
                     transaction.sign_transaction(self.wallet.private_key)
-                    self.current_block.fees += fee
+                    
                     self.balance -= fee
                     self.wallet.nonce += 1
               
@@ -117,7 +117,7 @@ class Node:
                 transaction.sign_transaction(self.wallet.private_key)
                 self.balance -= amount_new
                 self.stake_amount =  amount
-                self.state['stake'] = self.stake_amount
+                self.state[self.id]["stake"] = amount
                 print("---self.stake_amount for amount> ssa",self.stake_amount)
                 
             elif amount < self.stake_amount:
@@ -126,11 +126,11 @@ class Node:
                 transaction = Transaction(receiver_address, self.wallet.public_key, type_of_transaction, amount_new, "", self.wallet.nonce)
                 print("EKANE TO TRANSACTION")
                 #print("Transaction initialized", jsonpickle.encode(transaction))
-                transaction.sign_transaction(self.wallet.private_key)
-                print("EKANE TO SIGN TRANSACTION")
+                # transaction.sign_transaction(self.wallet.private_key)
+                # print("EKANE TO SIGN TRANSACTION")
                 self.balance += amount_new
                 self.stake_amount =  amount
-                self.state['stake'] = self.stake_amount
+                self.state[self.id]["stake"] = amount
                 print("---self.stake_amount for amount< ssa",self.stake_amount)
                 
         # print("Transaction initialized", transaction)
@@ -144,10 +144,11 @@ class Node:
         if self.stake_amount == amount:
             print("Amount already staked")
             return False
-        elif self.balance >= amount:
+        elif self.balance > amount:
             self.create_transaction(self.wallet.public_key, 0, 'coins', amount, None)
             return True
         else:
+            self.create_transaction(0,self.wallet.public_key, 'coins', amount, None)
             print("Not enough BCC")
             return False
 
@@ -264,6 +265,7 @@ class Node:
             if broadcasted:
                 print("broadcast all good, now to create a new block")
                 #if node.current_block.previous_hash == node.blockchain.blocks[-1].current_hash
+                print("Fees of the Block: ",self.current_block.fees)
                 self.balance += self.current_block.fees
                 self.blockchain.add_block(self.current_block)            
                 self.create_new_block()
@@ -346,16 +348,20 @@ class Node:
             for node in self.state:            
                 if transaction.type_of_transaction == 'message':
                     fee = len(transaction.message)
-                    if node['public_key'] == transaction.sender_address:
-                        node['balance'] -= fee
-                        break
+                    
+                if transaction.type_of_transaction == 'coins':
+                    fee = transaction.amount*0.03
+
                 if node['public_key'] == transaction.sender_address:
+                    node['balance'] -= fee
                     node['balance'] -= transaction.amount
-                    continue
-                if node['public_key'] == transaction.receiver_address:
-                    node['balance'] += transaction.amount
-                    continue
-            self.current_block.add_transaction(transaction)  ## maybe
+
+                    if node['public_key'] == transaction.receiver_address:
+                        node['balance'] += transaction.am
+                        
+            self.current_block.add_transaction(transaction)  
+            self.current_block.fee += fee
+            
             print("number of transactions in block",len(self.current_block.transactions))
             print("capacity ", self.capacity)
             return True
