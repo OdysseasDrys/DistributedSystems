@@ -242,9 +242,9 @@ class Node:
             self.current_block = self.create_new_block()
         if not self.add_transaction_to_block(transaction): 
             print("-------new_block--------")
-            validator = self.proof_of_stake()
-            print("------ Chosen Validator: ", validator, "------")
-            self.broadcast_block(validator) 
+            self.current_block.validator = self.proof_of_stake(self.current_block.previous_hash)
+            print("------ Chosen Validator: ", self.current_block.validator, "------")
+            self.broadcast_block(self.current_block.validator) 
             print("Broadcasted Block")       
         
         return True
@@ -315,13 +315,14 @@ class Node:
 
             if block_accepted:
                 with self.chain_lock:
-                    self.balance += self.current_block.fees
-                    self.current_block.time_of_death = float(timer())
-                    print("-BLOCK ",self.current_block.index, "DIED ", datetime.now())
-                    self.current_block.current_hash = self.current_block.calculate_hash()
-                    self.blockchain.add_block(self.current_block)  
+                    if self.validate_block(self.current_block):
+                        self.balance += self.current_block.fees
+                        self.current_block.time_of_death = float(timer())
+                        print("-BLOCK ",self.current_block.index, "DIED ", datetime.now())
+                        self.current_block.current_hash = self.current_block.calculate_hash()
+                        self.blockchain.add_block(self.current_block)  
 
-                    self.create_new_block() 
+                        self.create_new_block() 
 
 
         #self.state = self.calculate_state()
@@ -434,8 +435,8 @@ class Node:
             print("---full capacity")
             return False
 
-    def proof_of_stake(self):
-        random.seed(self.current_block.previous_hash)
+    def proof_of_stake(self, prev_hash):
+        random.seed(prev_hash)
         stakes = [node['stake'] for node in self.state]
         print(stakes)
         total_stake = sum(stakes)
@@ -524,6 +525,24 @@ class Node:
 
         return (transactions_per_sec, avg_block_duration)
 
-            
+def validate_block(self, block):
+        """Validates an incoming block.
 
+            The validation consists of:
+            - check that current hash is valid.
+            - validate the previous hash.
+        """
+        if (self.current_block.previous_hash == self.blockchain.blocks[-1].current_hash) and (self.current_block.validator == self.proof_of_stake(self.current_block.previous_hash)):
+            print("Block Validated")
+            return True
+        else:
+            print("BAAAAAAAAAAAAD")
+            return False
         
+       
+def validate_chain(self):
+    for block in self.blockchain.blocks[1:]:
+        if not self.validate_block(block):
+            return False    
+    
+    return True

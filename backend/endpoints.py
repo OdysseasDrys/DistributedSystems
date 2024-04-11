@@ -28,13 +28,13 @@ def get_block():
     new_block = pickle.loads(request.get_data())
     
     
-    #if node.current_block.previous_hash == node.blockchain.blocks[-1].current_hash:    # validation procedure of the block (check prev hash)
-    node.blockchain.blocks.append(new_block)
-    node.create_new_block()
-    print("------ Successfully added block")
-    return jsonify({'message': "OK"}), 200
-    #else:
-    #   return jsonify({'mesage': "Block rejected."}), 409
+    if node.validate_block(new_block):
+        node.blockchain.blocks.append(new_block)
+        node.create_new_block()
+        print("------ Successfully added block")
+        return jsonify({'message': "OK"}), 200
+    else:
+       return jsonify({'mesage': "Block rejected."}), 409
 
 @rest_api.route('/register_node', methods=['POST'])
 def register_node():
@@ -182,11 +182,14 @@ def get_blockchain():
         Returns:
             message: the outcome of the procedure.
     '''
+
     node.blockchain = pickle.loads(request.get_data())
+    #if node.validate_chain():
     # node.blockchain = jsonpickle.decode(request.get_data())
     # return jsonpickle.encode(request.get_data())
     return jsonify({'message': "OK"})
-
+    #else:
+    #   return jsonify({"message": "Chain validation failed."}), 400
 
 @rest_api.route('/send_chain', methods=['GET'])
 def send_chain():
