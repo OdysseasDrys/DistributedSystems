@@ -28,7 +28,7 @@ def test_coins():
     print("---starting")
     for i in range(0,5):
         address = 'http://' + IPAddr + ':' + \
-                            str(PORT) + '/api/create_transaction'
+                            str(PORT) + '/create_transaction'
         transaction = {}
         transaction["amount"] = 1
         transaction["receiver"] = 1
@@ -43,7 +43,7 @@ def test_messages():
     print("---starting")
     for i in range(0,5):
         address = 'http://' + IPAddr + ':' + \
-                            str(PORT) + '/api/create_transaction'
+                            str(PORT) + '/create_transaction'
         transaction = {}
         transaction["message"] = generate_random_message()
         transaction["receiver"] = 1
@@ -56,12 +56,12 @@ def test_messages():
 
 def run_test():
     address = 'http://' + IPAddr + ':' + \
-                    str(PORT) + '/api/parse_file'
+                    str(PORT) + '/parse_file'
     response = requests.get(address).json()
     return response
 
 def run_test_on_server(IPAddr, PORT):
-    address = f'http://{IPAddr}:{PORT}/api/parse_file'
+    address = f'http://{IPAddr}:{PORT}/parse_file'
     response = requests.get(address).json()
     t = str(response["transactions_per_sec"])
     b = str(response["avg_block_duration"])

@@ -186,7 +186,7 @@ def send_chain():
     return jsonpickle.encode(node.blockchain)
     
 
-@rest_api.route('/api/create_transaction', methods=['POST'])
+@rest_api.route('/create_transaction', methods=['POST'])
 def create_transaction():
     '''Endpoint that creates a new transaction.
 
@@ -238,7 +238,7 @@ def create_transaction():
         
 
 
-@rest_api.route('/api/get_balance', methods=['GET'])
+@rest_api.route('/get_balance', methods=['GET'])
 def get_balance():
     '''Endpoint that returns the current balance of the node.
 
@@ -248,7 +248,7 @@ def get_balance():
     return jsonify({'message': 'Current balance: ', 'balance': node.wallet.get_balance(node)})
 
 
-@rest_api.route('/api/get_stake_balance', methods=['GET'])
+@rest_api.route('/get_stake_balance', methods=['GET'])
 def get_stake_balance():
     '''Endpoint that returns the current stake balance of the node.
 
@@ -257,7 +257,7 @@ def get_stake_balance():
     '''
     return jsonify({'message': 'Current stake balance: ', 'balance': node.wallet.get_stake_balance(node)})
 
-@rest_api.route('/api/get_transactions', methods=['GET'])
+@rest_api.route('/get_transactions', methods=['GET'])
 def get_transactions():
     '''Endpoint that returns the transactions of the last confirmed block.
 
@@ -270,7 +270,7 @@ def get_transactions():
         
 
 
-@rest_api.route('/api/get_my_transactions', methods=['GET'])
+@rest_api.route('/get_my_transactions', methods=['GET'])
 def get_my_transactions():
     '''Endpoint that returns all the transactions of a node (as a sender of receiver).
 
@@ -283,17 +283,7 @@ def get_my_transactions():
         return jsonpickle.encode([transaction.to_list() for transaction in node.wallet.transactions])
         
 
-
-@rest_api.route('/api/get_id', methods=['GET'])
-def get_id():
-    '''Endpoint that returns the id of the node.
-
-        Returns:
-            message: the id of the node.
-    '''
-    return jsonify({'message': node.id})
-
-@rest_api.route('/api/parse_file', methods=['GET'])
+@rest_api.route('/parse_file', methods=['GET'])
 def parse_file():
     
     '''Endpoint that returns the id of the node.

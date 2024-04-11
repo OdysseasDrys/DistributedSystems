@@ -78,7 +78,7 @@ def client():
         os.system('cls||clear')
         if method_a == 'test inputs':
             address = 'http://' + IPAddr + ':' + \
-                    str(PORT) + '/api/parse_file'
+                    str(PORT) + '/parse_file'
             response = requests.get(address)
                 
             print("[Transactions per second, Average time of block]: ", response.content.decode('utf-8'))
@@ -122,7 +122,7 @@ def client():
             confirmation_a = prompt(confirmation_q)["confirm"]
             if confirmation_a:
                 address = 'http://' + IPAddr + ':' + \
-                    str(PORT) + '/api/create_transaction'
+                    str(PORT) + '/create_transaction'
                 try:
                     response = requests.post(
                         address, data=transaction_a).json()
@@ -180,7 +180,7 @@ def client():
             confirmation_a = prompt(confirmation_q)["confirm"]
             if confirmation_a:
                 address = 'http://' + IPAddr + ':' + \
-                    str(PORT) + '/api/create_transaction'
+                    str(PORT) + '/create_transaction'
                 try:
                     response = requests.post(
                         address, data=transaction_a).json()
@@ -208,7 +208,7 @@ def client():
             print(
                 "----------------------------------------------------------------------\n")
             address = 'http://' + IPAddr + ':' + \
-                    str(PORT) + '/api/get_transactions'
+                    str(PORT) + '/get_transactions'
             try:
                 response = requests.get(address)
                 
@@ -246,7 +246,7 @@ def client():
             print(
                 "----------------------------------------------------------------------\n")
             address = 'http://' + IPAddr + ':' + \
-                    str(PORT) + '/api/get_my_transactions'
+                    str(PORT) + '/get_my_transactions'
             try:
                 response = requests.get(address)
                 
@@ -285,7 +285,7 @@ def client():
             print(
                 "----------------------------------------------------------------------\n")
             address = 'http://' + IPAddr + ':' + \
-                str(PORT) + '/api/get_stake_balance'
+                str(PORT) + '/get_stake_balance'
                 
             response = requests.get(address).json()
             message = response['message']
@@ -317,7 +317,7 @@ def client():
             confirmation_a = prompt(confirmation_q)["confirm"]
             if confirmation_a:
                 address = 'http://' + IPAddr + ':' + \
-                    str(PORT) + '/api/create_transaction'
+                    str(PORT) + '/create_transaction'
                 try:
                     response = requests.post(
                         address, data=transaction_a).json()
@@ -344,7 +344,7 @@ def client():
             print("Your balance")
             print(
                 "----------------------------------------------------------------------\n")
-            address = 'http://' + IPAddr + ':' + str(PORT) + '/api/get_balance'
+            address = 'http://' + IPAddr + ':' + str(PORT) + '/get_balance'
             try:
                 response = requests.get(address).json()
                 message = response['message']
@@ -352,7 +352,7 @@ def client():
                 print(message + balance + ' BCCs\n')
             except:
                 print("Node is not active. Try again later.\n")
-            address = 'http://' + IPAddr + ':' + str(PORT) + '/api/get_stake_balance'
+            address = 'http://' + IPAddr + ':' + str(PORT) + '/get_stake_balance'
             try:
                 response = requests.get(address).json()
                 message = response['message']
