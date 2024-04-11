@@ -55,8 +55,7 @@ def register_node():
     
     node_port = request.form.get('port')
     node_id = len(node.state)
-    #node_boot_ip = request.form.get('ip')
-    #node_ip = node_boot_ip[:-1] + str(node_id)
+    
     
     # Add node in the list of registered nodes.
     node.state.append({
@@ -78,20 +77,14 @@ def register_node():
             if state_node['id'] != node.id:
                 node.share_blockchain(state_node)
                 node.share_state(state_node)
-        # print("---after sharing blockchain and state: ",state_node)
+        
         for state_node in node.state:
-            # print("------state_node2: ", state_node)
-            #print("---auto: ",state_node)
+            
             if state_node['id'] != node.id:
                 node.create_transaction(state_node['public_key'], 'first', 1000, "-")
                 print("Sent 1000 BCC to node ", state_node["id"])
                 
-                # address = 'http://' + state_node['ip'] + ':' + state_node['port']
-                # response = requests.post(address + '/get_block',
-                #                          data=pickle.dumps(node.current_block))
-                # if response.status_code != 200:
-                #     print("Failed to send block")
-                #     break          
+                         
                 
 
 
@@ -111,15 +104,13 @@ def validate_transaction():
         Returns:
             message: the outcome of the procedure.
     '''
-    # print("EFTASE EDW - 56")
+    
     new_transaction = pickle.loads(request.get_data())
-    # print("EFTASE EDW - 57")
-    # print(new_transaction)
-    # print(jsonpickle.encode(new_transaction))
+    
     if node.validate_transaction(new_transaction):
         return jsonify({'message': "OK"}), 200
     else:
-        # print("eimai sto endpoint")
+        
         return jsonify({'message': "The signature is not authentic"}), 401
 
 
@@ -135,16 +126,13 @@ def get_transaction():
     '''
 
     new_transaction = pickle.loads(request.get_data())
-    # if node.add_transaction_to_block(new_transaction):
-    #     return jsonify({'message': "OK"}), 200
-    # else:
-    #     return jsonify({'message': "The block was not added"}), 401
+   
     if (node.wallet.public_key == new_transaction.receiver_address):
         if (new_transaction.type_of_transaction =='coins' or new_transaction.type_of_transaction =='first'):
             node.balance += new_transaction.amount
 
 
-    #node.add_transaction_to_block(new_transaction)
+    
     if not node.add_transaction_to_block(new_transaction): 
             
             print("-------new_block--------")
@@ -152,9 +140,9 @@ def get_transaction():
             
             node.broadcast_block(validator) 
             print("Broadcasted Block")  
-    return jsonify({'message': "OK"}), 200
-    # else:
-    #     return jsonify({'message': "The block was not added"}), 401
+            return jsonify({'message': "OK"}), 200
+    else:
+            return jsonify({'message': "The block was not added"}), 401
 
 @rest_api.route('/get_state', methods=['POST'])
 def get_state():
@@ -184,12 +172,9 @@ def get_blockchain():
     '''
 
     node.blockchain = pickle.loads(request.get_data())
-    #if node.validate_chain():
-    # node.blockchain = jsonpickle.decode(request.get_data())
-    # return jsonpickle.encode(request.get_data())
+    
     return jsonify({'message': "OK"})
-    #else:
-    #   return jsonify({"message": "Chain validation failed."}), 400
+    
 
 @rest_api.route('/send_chain', methods=['GET'])
 def send_chain():
@@ -199,7 +184,7 @@ def send_chain():
             the blockchain of the node in pickle format.
     '''
     return jsonpickle.encode(node.blockchain)
-    #return pickle.dumps(node.blockchain)
+    
 
 @rest_api.route('/api/create_transaction', methods=['POST'])
 def create_transaction():
@@ -216,13 +201,13 @@ def create_transaction():
 
     # Get the arguments.
     stake = request.form.get('stake')
-    #print("--- is it stake:", stake)
+    
     type_of_transaction = request.form.get('type_of_transaction')
     amount = request.form.get('amount')
     if amount != None:
             amount = int(amount)
     message = request.form.get('message')
-    #print("--- amount is ", amount)
+    
     if stake == 'nostake':
         receiver_id = int(request.form.get('receiver'))
         # Find the address of the receiver.
@@ -250,14 +235,7 @@ def create_transaction():
                 return jsonify({'message': 'Transaction failed. Wrong receiver id.'}), 400
         elif amount == node.wallet.get_balance(node):
             return jsonify({'message': 'Amount is already staked. No transactions completed.'}), 200
-        # elif amount < node.wallet.get_balance(node):
-        #     try: 
-        #         if node.create_transaction(node.wallet.public_key, type_of_transaction, amount, message):
-        #             return jsonify({'message': 'The transaction was successful.', 'balance': node.wallet.get_balance(node)}), 200
-        #         else:
-        #             return jsonify({'message': 'Not enough BCCs.', 'balance': node.wallet.get_balance(node)}), 400
-        #     except:
-        #         return jsonify({'message': 'Transaction failed. Wrong receiver id.'}), 400
+        
 
 
 @rest_api.route('/api/get_balance', methods=['GET'])
@@ -286,13 +264,10 @@ def get_transactions():
         Returns:
             a formatted list of transactions in pickle format.
     '''
-    #if len(node.blockchain.blocks[-1].transactions)==0:
-     #   return jsonify({'message': 'There are no transactions in the last block.'}), 400
-    #else:
-        # return jsonpickle.encode(node.blockchain.blocks[-1].transactions)
+    
     print(node.blockchain.blocks)
     return jsonpickle.encode([transaction.to_list() for transaction in node.blockchain.blocks[-1].transactions])
-        #return jsonify(len(node.blockchain.blocks[-1].transactions)) # comment the above to see the number of transactions in the last block
+        
 
 
 @rest_api.route('/api/get_my_transactions', methods=['GET'])
@@ -306,8 +281,7 @@ def get_my_transactions():
         return jsonify({'message': 'There are no transactions in the wallet.'}), 400
     else:
         return jsonpickle.encode([transaction.to_list() for transaction in node.wallet.transactions])
-        return pickle.dumps([transaction.to_list() for transaction in node.wallet.transactions])
-        return jsonify(len(node.wallet.transactions)) # comment the above to see the number of transactions in the wallet
+        
 
 
 @rest_api.route('/api/get_id', methods=['GET'])
@@ -321,14 +295,13 @@ def get_id():
 
 @rest_api.route('/api/parse_file', methods=['GET'])
 def parse_file():
-    # node.parse_file()
+    
     '''Endpoint that returns the id of the node.
 
         Returns:
             message: the id of the node.
     '''
     transactions_per_sec, avg_block_duration = node.parse_file()
-    #print(str(transactions_per_sec), str(avg_block_duration))
-    
+        
     return jsonify({'transactions_per_sec': str(transactions_per_sec) , 'avg_block_duration': str(avg_block_duration)})
 

@@ -22,7 +22,7 @@ class Block(object):
     # timestamps = []
     def __init__(self, index, previous_hash, capacity):
         self.index = index
-        # self.timestamp = float(timer())
+        
         self.timestamp = float(timer())
         print("--BLOCK ",self.index, "WAS BORN ", datetime.now())
         self.transactions = []
@@ -36,7 +36,7 @@ class Block(object):
 
     def add_transaction(self, transaction):
         """Add a transaction to the block"""
-        # print("---", self.capacity)
+        
         if len(self.transactions) < self.capacity:
             self.transactions.append(transaction)
             return True
@@ -55,16 +55,4 @@ class Block(object):
         sorted_block_string = pickle.dumps(block_dict, protocol=0)
         return hashlib.sha256(sorted_block_string).hexdigest()
     
-    # def get_block_duration(self):
-    #     """Calculates the time it took to validate the block"""
-    #     # if self.time_of_death > self.timestamp:
-    #     #     duration = (self.time_of_death)-(self.timestamp)
-    #     # else:
-    #     #     duration = self.timestamp - self.time_of_death
-    #     # duration = abs(abs(self.time_of_death)-(self.timestamp))
-    #     # print("-",self.time_of_death)
-    #     # print("--",self.timestamp)
-
-    #     # print(duration)
-    #     return duration
-   
+    

@@ -88,10 +88,4 @@ if __name__ == "__main__":
         thread.join()
 
 
-    # response = run_test()
- 
-    # t = str(response["transactions_per_sec"])
-    # b = str(response["avg_block_duration"])
-    # print("\n" ,"transactions_per_sec: ", t,
-    #       "\n", "avg_block_duration: ", b)
-    # #print(response)
+    

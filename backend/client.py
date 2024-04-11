@@ -80,8 +80,7 @@ def client():
             address = 'http://' + IPAddr + ':' + \
                     str(PORT) + '/api/parse_file'
             response = requests.get(address)
-                # print(response.content)
-            # data= jsonpickle.decode(response.content)
+                
             print("[Transactions per second, Average time of block]: ", response.content.decode('utf-8'))
             if HomeOrExit() == 'exit':
                 break
@@ -110,7 +109,7 @@ def client():
             transaction_a = prompt(transaction_q, style=style)
             transaction_a['type_of_transaction'] = 'coins'
             transaction_a['stake'] = "nostake"
-            # print(transaction_a)
+            
             print("\nConfirmation:")
             confirmation_q = [
                 {
@@ -168,7 +167,7 @@ def client():
             transaction_a = prompt(transaction_q, style=style)
             transaction_a['type_of_transaction'] = 'message'
             transaction_a['stake'] = "nostake"
-            # print(transaction_a)
+            
             print("\nConfirmation:")
             confirmation_q = [
                 {
@@ -212,11 +211,10 @@ def client():
                     str(PORT) + '/api/get_transactions'
             try:
                 response = requests.get(address)
-                # print(response.content)
+                
                 data= jsonpickle.decode(response.content)
                 
-                # print(data)
-                # data = pickle.loads(response.content)
+                
                 table = Texttable()
                 table.set_deco(Texttable.HEADER)
                 table.set_cols_dtype(['t',  # text
@@ -251,11 +249,10 @@ def client():
                     str(PORT) + '/api/get_my_transactions'
             try:
                 response = requests.get(address)
-                # print(response.content)
+                
                 data= jsonpickle.decode(response.content)
                 
-                # print(data)
-                # data = pickle.loads(response.content)
+                
                 table = Texttable()
                 table.set_deco(Texttable.HEADER)
                 table.set_cols_dtype(['t',  # text
@@ -289,7 +286,7 @@ def client():
                 "----------------------------------------------------------------------\n")
             address = 'http://' + IPAddr + ':' + \
                 str(PORT) + '/api/get_stake_balance'
-                # try:
+                
             response = requests.get(address).json()
             message = response['message']
             balance = str(response['balance'])
@@ -306,7 +303,7 @@ def client():
             transaction_a['amount'] = prompt(transaction_q, style=style)['amount']
             transaction_a['type_of_transaction'] = 'coins'
             transaction_a['stake'] = "yesstake"
-            # print(transaction_a)
+            
 
             print("\nConfirmation:")
             confirmation_q = [
