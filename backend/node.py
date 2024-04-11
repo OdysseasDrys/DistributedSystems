@@ -525,24 +525,25 @@ class Node:
 
         return (transactions_per_sec, avg_block_duration)
 
-def validate_block(self, block):
+    def validate_block(self, block):
         """Validates an incoming block.
 
             The validation consists of:
             - check that current hash is valid.
             - validate the previous hash.
         """
-        if (self.current_block.previous_hash == self.blockchain.blocks[-1].current_hash) and (self.current_block.validator == self.proof_of_stake(self.current_block.previous_hash)):
+        if (self.current_block.validator == self.proof_of_stake(self.current_block.previous_hash) )and (self.current_block.validator == self.proof_of_stake(self.current_block.previous_hash)):#(self.current_block.previous_hash == self.blockchain.blocks[-1].current_hash)
             print("Block Validated")
             return True
         else:
-            print("BAAAAAAAAAAAAD")
+            print ("Block not Validated")
             return False
         
+              
        
-def validate_chain(self):
-    for block in self.blockchain.blocks[1:]:
-        if not self.validate_block(block):
-            return False    
-    
-    return True
+    def validate_chain(self):
+        for block in self.blockchain.blocks[1:]:
+            if not self.validate_block(block):
+                return False    
+        
+        return True

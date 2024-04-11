@@ -148,8 +148,8 @@ def get_transaction():
     if not node.add_transaction_to_block(new_transaction): 
             
             print("-------new_block--------")
-            validator = node.proof_of_stake()
-            print("------", validator)
+            validator = node.proof_of_stake(node.current_block.previous_hash)
+            
             node.broadcast_block(validator) 
             print("Broadcasted Block")  
     return jsonify({'message': "OK"}), 200
