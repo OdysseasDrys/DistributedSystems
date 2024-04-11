@@ -4,6 +4,7 @@ import json
 import pickle
 import responses
 import requests
+from timeit import default_timer as timer
 
 class Block(object):
     """
@@ -17,17 +18,18 @@ class Block(object):
     - capacity: the capacity of the block
     - fees: the fees of the block
     """
-
+    # timestamps = []
     def __init__(self, index, previous_hash, capacity):
         self.index = index
-        self.timestamp = time()
+        # self.timestamp = float(timer())
+        self.timestamp = float(timer())
         self.transactions = []
         self.validator = None
         self.previous_hash = previous_hash
         self.current_hash = None
         self.capacity = capacity
         self.fees = 0
-        self.time_of_death = 0
+        # self.time_of_death = 0
         
 
     def add_transaction(self, transaction):
@@ -51,8 +53,16 @@ class Block(object):
         sorted_block_string = pickle.dumps(block_dict, protocol=0)
         return hashlib.sha256(sorted_block_string).hexdigest()
     
-    def get_block_duration(self):
-        """Calculates the time it took to validate the block"""
-        duration = self.time_of_death-self.timestamp
-        return duration
+    # def get_block_duration(self):
+    #     """Calculates the time it took to validate the block"""
+    #     # if self.time_of_death > self.timestamp:
+    #     #     duration = (self.time_of_death)-(self.timestamp)
+    #     # else:
+    #     #     duration = self.timestamp - self.time_of_death
+    #     # duration = abs(abs(self.time_of_death)-(self.timestamp))
+    #     # print("-",self.time_of_death)
+    #     # print("--",self.timestamp)
+
+    #     # print(duration)
+    #     return duration
    

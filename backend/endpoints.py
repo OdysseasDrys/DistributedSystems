@@ -55,8 +55,11 @@ def register_node():
     # Get the arguments
     node_key = request.form.get('public_key')
     node_ip = request.form.get('ip')
+    
     node_port = request.form.get('port')
     node_id = len(node.state)
+    #node_boot_ip = request.form.get('ip')
+    #node_ip = node_boot_ip[:-1] + str(node_id)
     
     # Add node in the list of registered nodes.
     node.state.append({
@@ -330,4 +333,5 @@ def parse_file():
         Returns:
             message: the id of the node.
     '''
+    
     return node.parse_file()

@@ -18,8 +18,10 @@ from endpoints import node, rest_api
 
 # All nodes are aware of the ip and the port of the bootstrap
 # node, in order to communicate with it when entering the network.
-BOOTSTRAP_IP = config.BOOTSTRAP_IP
-BOOTSTRAP_PORT = config.BOOTSTRAP_PORT
+if config.LOCAL:
+    BOOTSTRAP_IP = config.BOOTSTRAP_IP
+    BOOTSTRAP_PORT = config.BOOTSTRAP_PORT
+
 
 
 
@@ -35,7 +37,9 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Rest api of BCC.')
     parser.add_argument('--nodes', type=int, help='Number of nodes', required= True)
     parser.add_argument('--port', type=int, help='Port number', required=True)
+    #parser.add_argument('--capacity', type=int, help='Capacity of the blocks')
     parser.add_argument('--bootstrap', action='store_true', help='Boolean variable')
+    
 
 
     
@@ -43,9 +47,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
     endpoints.n = args.nodes
+    #capacity = args.capacity
     capacity = 5
     is_bootstrap = args.bootstrap
-    node.capacity = 5
+    node.capacity = capacity
 
     if (is_bootstrap):
         """
@@ -61,6 +66,7 @@ if __name__ == '__main__':
         
         node.state.append({
         'id': node.id,
+        #'ip': ''192.168.0.0'',
         'ip': BOOTSTRAP_IP,
         'port': BOOTSTRAP_PORT,
         'public_key': node.wallet.public_key,
@@ -98,13 +104,15 @@ if __name__ == '__main__':
         """
 
         # Define the register address outside the function
-        
+        #register_address = 'http://'192.168.0.0':' + BOOTSTRAP_PORT + '/register_node'
         register_address = 'http://' + BOOTSTRAP_IP + ':' + BOOTSTRAP_PORT + '/register_node'
         # print(node.wallet.public_key)
         def thread_function():
             time.sleep(2)
             response = requests.post(register_address,
                                 data={'public_key': node.wallet.public_key, 'ip': BOOTSTRAP_IP, 'port': port})
+            #response = requests.post(register_address,
+                                #data={'public_key': node.wallet.public_key, 'ip': '192.168.0.0', 'port': port})
             
             if response.status_code == 200:
                 print("Node initialized")

@@ -9,6 +9,7 @@ import jsonpickle
 import time
 from threading import Lock,Thread
 import re
+from timeit import default_timer as timer
 
 class Node:
     """
@@ -277,7 +278,7 @@ class Node:
                 self.balance += self.current_block.fees
                 
                 self.blockchain.add_block(self.current_block)  
-                self.current_block.time_of_death = time.time()
+                
                 self.create_new_block()
                 # print("Created new Block")
 
@@ -295,7 +296,7 @@ class Node:
         # print("EFTASE EDW -  79")
         if not transaction.verify_signature():            
             return False
-        if self.current_block == None:            
+        if self.current_block == None:  
             self.create_new_block()
         # print("EFTASE EDW -  80")   
          
@@ -364,11 +365,16 @@ class Node:
             if transaction.type_of_transaction == 'message':
                 fee = len(transaction.message)
                 
-            if transaction.type_of_transaction == 'coins':
+            if transaction.type_of_transaction == 'coins':                
                 fee = transaction.amount*0.03
                     
             for node in self.state: 
-                if node['public_key'] == transaction.sender_address and transaction.type_of_transaction != 'first':
+                if transaction.receiver_address == 0 and node['public_key'] == transaction.sender_address:
+                    node['stake'] = transaction.amount
+                    node['balance'] -= transaction.amount
+
+
+                if node['public_key'] == transaction.sender_address and transaction.type_of_transaction != 'first' and transaction.receiver_address != 0 :
                     node['balance'] -= fee
                     node['balance'] -= transaction.amount
 
@@ -439,7 +445,7 @@ class Node:
         
         # Regular expression pattern to match 'id' followed by a number and the message
         pattern = r'id(\d+)\s+(.*)'
-        start_time = time.time()
+        start_time = float(timer())
         num_of_transactions=0
         for line in lines:
             # Use regular expression to find matches
@@ -453,17 +459,22 @@ class Node:
                     self.create_transaction(node['public_key'], "message", 0, message)
                     num_of_transactions += 1
                     break
-        end_time = time.time()
+        end_time = float(timer())
+        print("start_time: ",start_time)
+        print("end_time: ",end_time)
         duration = end_time - start_time
         transactions_per_sec = num_of_transactions / duration
         print("Transactions per second : ", transactions_per_sec)
         
-        block_duration_sum = 0
-
+        timestamps = []
         for block in self.blockchain.blocks:
-            block_duration_sum += block.get_block_duration()
+            timestamps.append(block.timestamp)        
         
-        avg_block_duration = block_duration_sum/len(self.blockchain.blocks)
+        timestamps.sort()
+        print("TIMESTAMPS:",timestamps)
+        durations = [timestamps[i + 1] - timestamps[i] for i in range(len(timestamps) - 1)]
+        print(len(self.blockchain.blocks))
+        avg_block_duration = sum(durations) / len(durations) if durations else 0
         print("Avg block duration : ", avg_block_duration)
 
         return [transactions_per_sec, avg_block_duration]

@@ -4,6 +4,8 @@ import pickle
 import os
 import config
 import jsonpickle
+import random
+import string
 
 from PyInquirer import style_from_dict, Token, prompt
 from PyInquirer import Validator, ValidationError
@@ -18,6 +20,9 @@ else:
     hostname = socket.gethostname()
     IPAddr = socket.gethostbyname(hostname)
 PORT = 5000
+
+def generate_random_message(length=5):
+    return ''.join(random.choice(string.ascii_letters) for _ in range(length))
 
 def test_coins():
     print("---starting")
@@ -40,7 +45,7 @@ def test_messages():
         address = 'http://' + IPAddr + ':' + \
                             str(PORT) + '/api/create_transaction'
         transaction = {}
-        transaction["message"] = "hello"
+        transaction["message"] = generate_random_message()
         transaction["receiver"] = 1
         transaction['type_of_transaction'] = 'message'
         transaction['stake'] = "nostake"
@@ -53,5 +58,3 @@ if __name__ == "__main__":
 
     #test_coins()
     test_messages()
-
-

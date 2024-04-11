@@ -75,7 +75,7 @@ def client():
                 'filter': lambda val: val.lower()
             }]
         method_a = prompt(method_q, style=style)["method"]
-        # os.system('cls||clear')
+        os.system('cls||clear')
         if method_a == 'test inputs':
             address = 'http://' + IPAddr + ':' + \
                     str(PORT) + '/api/parse_file'
@@ -85,7 +85,10 @@ def client():
             print("[Transactions per second, Average time of block]: ", response.content.decode('utf-8'))
             if HomeOrExit() == 'exit':
                 break
-        if method_a == 'new transaction (coins)':
+            else:
+                os.system('cls||clear')
+
+        elif method_a == 'new transaction (coins)':
             print("New transaction (coins)!")
             print(
                 "----------------------------------------------------------------------")
@@ -138,8 +141,8 @@ def client():
                     print("\nNode is not active. Try again later.\n")
                 if HomeOrExit() == 'exit':
                     break
-                # else:
-                    # os.system('cls||clear')
+                else:
+                    os.system('cls||clear')
             else:
                 print("\nTransaction aborted.")
 
@@ -196,8 +199,8 @@ def client():
                     print("\nNode is not active. Try again later.\n")
                 if HomeOrExit() == 'exit':
                     break
-                # else:
-                    # os.system('cls||clear')
+                else:
+                    os.system('cls||clear')
             else:
                 print("\nTransaction aborted.")
 
@@ -238,8 +241,8 @@ def client():
                 print("Node is not active. Try again later.\n")
             if HomeOrExit() == 'exit':
                 break
-            # else:
-                # os.system('cls||clear')
+            else:
+                os.system('cls||clear')
         elif method_a == 'view wallet transactions':
             print("All transactions of the wallet")
             print(
@@ -277,8 +280,8 @@ def client():
                 print("Node is not active. Try again later.\n")
             if HomeOrExit() == 'exit':
                 break
-            # else:
-                # os.system('cls||clear')
+            else:
+                os.system('cls||clear')
         elif method_a == 'stake/unstake':
 
             print("Stake amount for the node")
@@ -335,8 +338,8 @@ def client():
                     print("\nNode is not active. Try again later.\n")
                 if HomeOrExit() == 'exit':
                     break
-                # else:
-                    # os.system('cls||clear')
+                else:
+                    os.system('cls||clear')
             else:
                 print("\Staking aborted.")
 
@@ -362,8 +365,8 @@ def client():
                 print("Node is not active. Try again later.\n")
             if HomeOrExit() == 'exit':
                 break
-            # else:
-                # os.system('cls||clear')
+            else:
+                os.system('cls||clear')
         elif method_a == 'help':
             print("Help")
             print(
@@ -379,8 +382,8 @@ def client():
 
             if HomeOrExit() == 'Exit':
                 break
-            # else:
-                # os.system('cls||clear')
+            else:
+                os.system('cls||clear')
 
         else:
             break
