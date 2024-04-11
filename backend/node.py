@@ -533,10 +533,10 @@ class Node:
             - validate the previous hash.
         """
         if (self.current_block.validator == self.proof_of_stake(self.current_block.previous_hash) )and (self.current_block.validator == self.proof_of_stake(self.current_block.previous_hash)):#(self.current_block.previous_hash == self.blockchain.blocks[-1].current_hash)
-            print("Block Validated")
+            
             return True
         else:
-            print ("Block not Validated")
+            
             return False
         
               
