@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
         # Create the genesis block
         genesis_block = node.create_new_block()
-        node.current_block = genesis_block
+        
         
 
         # Adds the first and only transaction in the genesis block.

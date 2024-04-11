@@ -12,7 +12,7 @@ from PyInquirer import Validator, ValidationError
 from argparse import ArgumentParser
 from texttable import Texttable
 from time import sleep
-
+import threading
 # Get the IP address of the device
 if config.LOCAL:
     IPAddr = '127.0.0.1'
@@ -37,7 +37,7 @@ def test_coins():
         response = requests.post(
             address, data=transaction).json()
         message = response["message"]
-    print("\n" + message + '\n')
+    print("\n" , message , '\n')
     
 def test_messages():
     print("---starting")
@@ -54,7 +54,44 @@ def test_messages():
         message = response["message"]
     print("\n" + message + '\n')
 
+def run_test():
+    address = 'http://' + IPAddr + ':' + \
+                    str(PORT) + '/api/parse_file'
+    response = requests.get(address).json()
+    return response
+
+def run_test_on_server(IPAddr, PORT):
+    address = f'http://{IPAddr}:{PORT}/api/parse_file'
+    response = requests.get(address).json()
+    t = str(response["transactions_per_sec"])
+    b = str(response["avg_block_duration"])
+    print(f"\ntransactions_per_sec: {t}\navg_block_duration: {b}\n")
+
+
 if __name__ == "__main__":
 
-    #test_coins()
-    test_messages()
+    servers = [
+        {'IPAddr': IPAddr, 'PORT': 5000},
+        {'IPAddr': IPAddr, 'PORT': 5001},
+        {'IPAddr': IPAddr, 'PORT': 5002},
+        {'IPAddr': IPAddr, 'PORT': 5003},
+        {'IPAddr': IPAddr, 'PORT': 5004},
+    ]
+
+    threads = []
+    for server in servers:
+        thread = threading.Thread(target=run_test_on_server, args=(server['IPAddr'], server['PORT']))
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+
+    # response = run_test()
+ 
+    # t = str(response["transactions_per_sec"])
+    # b = str(response["avg_block_duration"])
+    # print("\n" ,"transactions_per_sec: ", t,
+    #       "\n", "avg_block_duration: ", b)
+    # #print(response)

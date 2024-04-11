@@ -5,6 +5,6 @@ app.config['DEBUG']=True
 
 @app.route('/',methods=['GET'])
 def home():
-    return '<h1>o ody ton pinei</h1>'
+    return '<h1>ChatBlock by Drys-Pentzakis Odyssefs, Markantonatos Gerasimos and Konstantinos Katsigiannis</h1>'
 
 app.run()

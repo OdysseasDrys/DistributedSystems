@@ -10,6 +10,8 @@ import time
 from threading import Lock,Thread
 import re
 from timeit import default_timer as timer
+import jsonpickle
+from datetime import datetime
 
 class Node:
     """
@@ -43,6 +45,7 @@ class Node:
         self.stake_amount = 0
         self.validated_blocks = 0
         self.block_time = 0
+        self.chain_lock = Lock()
         
     def __str__(self): 
         return str(self.__class__) + ": " + str(self.__dict__)
@@ -64,6 +67,7 @@ class Node:
             index = len(self.blockchain.blocks)
             previous_hash= self.blockchain.blocks[-1].calculate_hash()
             self.current_block = Block(index, previous_hash, self.capacity)
+            #send this current block to the other nodes
             # print("block index:", index)
             
         return self.current_block
@@ -113,31 +117,32 @@ class Node:
                     self.wallet.nonce += 1
               
         else: #in case it is a stake transaction 
-            # print("---- amount and self.stake_amount: ", amount, self.stake_amount)
-            if amount > self.stake_amount:
-                self.wallet.nonce += 1
-                amount_new = abs(amount - self.stake_amount)
-                transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount_new, "", self.wallet.nonce)
-                #print("Transaction initialized", jsonpickle.encode(transaction))
-                transaction.sign_transaction(self.wallet.private_key)
-                self.balance -= amount_new
-                self.stake_amount =  amount
-                self.state[self.id]["stake"] = amount
-                # print("---self.stake_amount for amount> ssa",self.stake_amount)
-                
-            elif amount < self.stake_amount:
-                self.wallet.nonce += 1
-                amount_new = abs(self.stake_amount - amount)
-                transaction = Transaction(receiver_address, self.wallet.public_key, type_of_transaction, amount_new, "", self.wallet.nonce)
-                # print("EKANE TO TRANSACTION")
-                # print(jsonpickle.encode(transaction))
-                #print("Transaction initialized", jsonpickle.encode(transaction))
-                # transaction.sign_transaction(self.wallet.private_key)
-                # print("EKANE TO SIGN TRANSACTION")
-                self.balance += amount_new
-                self.stake_amount =  amount
-                self.state[self.id]["stake"] = amount
-                # print("---self.stake_amount for amount< ssa",self.stake_amount)
+            
+                # print("---- amount and self.stake_amount: ", amount, self.stake_amount)
+                if amount > self.stake_amount:
+                    self.wallet.nonce += 1
+                    amount_new = abs(amount - self.stake_amount)
+                    transaction = Transaction(self.wallet.public_key, receiver_address, type_of_transaction, amount_new, "", self.wallet.nonce)
+                    #print("Transaction initialized", jsonpickle.encode(transaction))
+                    transaction.sign_transaction(self.wallet.private_key)
+                    self.balance -= amount_new
+                    self.stake_amount =  amount
+                    self.state[self.id]["stake"] = amount
+                    # print("---self.stake_amount for amount> ssa",self.stake_amount)
+                    
+                elif amount < self.stake_amount:
+                    self.wallet.nonce += 1
+                    amount_new = abs(self.stake_amount - amount)
+                    transaction = Transaction(receiver_address, self.wallet.public_key, type_of_transaction, amount_new, "", self.wallet.nonce)
+                    # print("EKANE TO TRANSACTION")
+                    # print(jsonpickle.encode(transaction))
+                    #print("Transaction initialized", jsonpickle.encode(transaction))
+                    # transaction.sign_transaction(self.wallet.private_key)
+                    # print("EKANE TO SIGN TRANSACTION")
+                    self.balance += amount_new
+                    self.stake_amount =  amount
+                    self.state[self.id]["stake"] = amount
+                    # print("---self.stake_amount for amount< ssa",self.stake_amount)
                 
         # print("Transaction initialized", transaction)
         
@@ -238,7 +243,7 @@ class Node:
         if not self.add_transaction_to_block(transaction): 
             print("-------new_block--------")
             validator = self.proof_of_stake()
-            print("------", validator)
+            print("------ Chosen Validator: ", validator, "------")
             self.broadcast_block(validator) 
             print("Broadcasted Block")       
         
@@ -251,36 +256,73 @@ class Node:
         
             
         if self.id == validator:   #the genesis block has no validator   
-            # print("I am running this")
-            self.validated_blocks += 1  # number of times this node has been validator
-            responses = []
-            # broadcasted = False
-            broadcasted = True
-            for node in self.state:
-                if node["id"]!=self.id:
+            # # print("I am running this")
+            # self.validated_blocks += 1  # number of times this node has been validator
+            # responses = []
+            # # broadcasted = False
+            # broadcasted = True
+            # for node in self.state:
+            #     if node["id"]!=self.id:
+            #         address = 'http://' + node['ip'] + ':' + node['port']
+            #         response = requests.post(address + '/get_block',
+            #                              data=pickle.dumps(self.current_block))
+            #         responses.append(response)
+            # # print(responses) 
+            # for res in responses:
+            #     # print(res)
+                
+            #     # if res == 200:
+            #     #     broadcasted = True  
+            #     if res.status_code != 200:
+            #         # print("bad response")
+            #         broadcasted = False
+            # if broadcasted:
+            #     # print("broadcast all good, now to create a new block")
+            #     #if node.current_block.previous_hash == node.blockchain.blocks[-1].current_hash
+            #     # print("Fees of the Block: ",self.current_block.fees)
+            #     self.balance += self.current_block.fees
+            #     self.current_block.time_of_death = float(timer())
+            #     self.current_block.current_hash = self.current_block.calculate_hash()
+            #     self.blockchain.add_block(self.current_block)  
+                
+            #     self.create_new_block()
+            #     # print("Created new Block")
+
+        
+            block_accepted = False
+
+            def thread_func(node, responses):
+                if node['id'] != self.id:
                     address = 'http://' + node['ip'] + ':' + node['port']
                     response = requests.post(address + '/get_block',
-                                         data=pickle.dumps(self.current_block))
-                    responses.append(response)
-            # print(responses) 
+                                             data=pickle.dumps(self.current_block))
+                    responses.append(response.status_code)
+
+            threads = []
+            responses = []
+            for node in self.state:
+                thread = Thread(target=thread_func, args=(
+                    node, responses))
+                threads.append(thread)
+                thread.start()
+
+            for tr in threads:
+                tr.join()
+
             for res in responses:
-                # print(res)
-                
-                # if res == 200:
-                #     broadcasted = True  
-                if res.status_code != 200:
-                    # print("bad response")
-                    broadcasted = False
-            if broadcasted:
-                # print("broadcast all good, now to create a new block")
-                #if node.current_block.previous_hash == node.blockchain.blocks[-1].current_hash
-                # print("Fees of the Block: ",self.current_block.fees)
-                self.balance += self.current_block.fees
-                
-                self.blockchain.add_block(self.current_block)  
-                
-                self.create_new_block()
-                # print("Created new Block")
+                if res == 200:
+                    block_accepted = True
+
+            if block_accepted:
+                with self.chain_lock:
+                    self.balance += self.current_block.fees
+                    self.current_block.time_of_death = float(timer())
+                    print("-BLOCK ",self.current_block.index, "DIED ", datetime.now())
+                    self.current_block.current_hash = self.current_block.calculate_hash()
+                    self.blockchain.add_block(self.current_block)  
+
+                    self.create_new_block() 
+
 
         #self.state = self.calculate_state()
         #self.current_block.state = self.state
@@ -439,7 +481,9 @@ class Node:
                       data=pickle.dumps(self.state))
         
     def parse_file(self):
-        input_file = f"../5nodes/trans{self.id}.txt"
+        #input_file = "C:/Users/odydr/OneDrive/Documents/GitHub/DistributedSystems/5nodes/2nodes.txt" 
+
+        input_file = f"../5nodes_test/trans{self.id}.txt"
         with open(input_file, 'r') as file:
             lines = file.readlines()
         
@@ -473,11 +517,13 @@ class Node:
         timestamps.sort()
         print("TIMESTAMPS:",timestamps)
         durations = [timestamps[i + 1] - timestamps[i] for i in range(len(timestamps) - 1)]
-        print(len(self.blockchain.blocks))
+        print("Length of Blockchain: ", len(self.blockchain.blocks))
         avg_block_duration = sum(durations) / len(durations) if durations else 0
         print("Avg block duration : ", avg_block_duration)
+        respo = str(transactions_per_sec)+ str(avg_block_duration)
 
-        return [transactions_per_sec, avg_block_duration]
+        return (transactions_per_sec, avg_block_duration)
+
             
 
         

@@ -5,6 +5,7 @@ import pickle
 import responses
 import requests
 from timeit import default_timer as timer
+from datetime import datetime
 
 class Block(object):
     """
@@ -23,13 +24,14 @@ class Block(object):
         self.index = index
         # self.timestamp = float(timer())
         self.timestamp = float(timer())
+        print("--BLOCK ",self.index, "WAS BORN ", datetime.now())
         self.transactions = []
         self.validator = None
         self.previous_hash = previous_hash
         self.current_hash = None
         self.capacity = capacity
         self.fees = 0
-        # self.time_of_death = 0
+        self.time_of_death = 0
         
 
     def add_transaction(self, transaction):

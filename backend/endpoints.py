@@ -15,9 +15,6 @@ n = 0
 node.state = []
 rest_api = Blueprint('rest_api', __name__)
 
-
-
-
 @rest_api.route('/get_block', methods=['POST'])
 def get_block():
     '''Endpoint that gets an incoming block, validates it and adds it in the
@@ -31,13 +28,13 @@ def get_block():
     new_block = pickle.loads(request.get_data())
     
     
-    #if node.current_block.previous_hash == last_block.current_hash:    # validation procedure of the block (check prev hash)
+    #if node.current_block.previous_hash == node.blockchain.blocks[-1].current_hash:    # validation procedure of the block (check prev hash)
     node.blockchain.blocks.append(new_block)
     node.create_new_block()
     print("------ Successfully added block")
     return jsonify({'message': "OK"}), 200
     #else:
-     #   return jsonify({'mesage': "Block rejected."}), 409
+    #   return jsonify({'mesage': "Block rejected."}), 409
 
 @rest_api.route('/register_node', methods=['POST'])
 def register_node():
@@ -201,12 +198,6 @@ def send_chain():
     return jsonpickle.encode(node.blockchain)
     #return pickle.dumps(node.blockchain)
 
-
-##############################################################
-################## CLIENT/API COMMUNICATION ##################
-##############################################################
-
-
 @rest_api.route('/api/create_transaction', methods=['POST'])
 def create_transaction():
     '''Endpoint that creates a new transaction.
@@ -333,5 +324,8 @@ def parse_file():
         Returns:
             message: the id of the node.
     '''
+    transactions_per_sec, avg_block_duration = node.parse_file()
+    #print(str(transactions_per_sec), str(avg_block_duration))
     
-    return node.parse_file()
+    return jsonify({'transactions_per_sec': str(transactions_per_sec) , 'avg_block_duration': str(avg_block_duration)})
+
