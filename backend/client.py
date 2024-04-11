@@ -1,6 +1,5 @@
 import requests
 import socket
-import pickle
 import os
 import config
 import jsonpickle
@@ -220,9 +219,6 @@ def client():
                 table.set_cols_dtype(['t',  # text
                                       't',  # text
                                       't',  # text
-                                    #   't',  # text
-                                    #   't',  # text
-                                    #   't',  # text
                                       't',  # text
                                       't'])  # text
                
@@ -258,9 +254,6 @@ def client():
                 table.set_cols_dtype(['t',  # text
                                       't',  # text
                                       't',  # text
-                                    #   't',  # text
-                                    #   't',  # text
-                                    #   't',  # text
                                       't',  # text
                                       't'])  # text
                

@@ -1,17 +1,8 @@
 import requests
 import socket
-import pickle
-import os
 import config
-import jsonpickle
 import random
 import string
-
-from PyInquirer import style_from_dict, Token, prompt
-from PyInquirer import Validator, ValidationError
-from argparse import ArgumentParser
-from texttable import Texttable
-from time import sleep
 import threading
 # Get the IP address of the device
 if config.LOCAL:

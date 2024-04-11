@@ -75,4 +75,4 @@ class Wallet:
         """
         Get the balance of the wallet
         """
-        return node.balance #- abs(staked_balance)
+        return node.balance

@@ -5,12 +5,9 @@ from transaction import Transaction
 import requests
 import pickle
 import random
-import jsonpickle
-import time
 from threading import Lock,Thread
 import re
 from timeit import default_timer as timer
-import jsonpickle
 from datetime import datetime
 
 class Node:
@@ -200,7 +197,7 @@ class Node:
                     if self.validate_block(self.current_block):
                         self.balance += self.current_block.fees
                         self.current_block.time_of_death = float(timer())
-                        print("-BLOCK ",self.current_block.index, "DIED ", datetime.now())
+                        # print("-BLOCK ",self.current_block.index, "DIED ", datetime.now())
                         self.current_block.current_hash = self.current_block.calculate_hash()
                         self.blockchain.add_block(self.current_block)  
 

@@ -1,9 +1,6 @@
 from time import time
 import hashlib # maybe change to Crypto.Hash instead
-import json
 import pickle
-import responses
-import requests
 from timeit import default_timer as timer
 from datetime import datetime
 
@@ -19,12 +16,12 @@ class Block(object):
     - capacity: the capacity of the block
     - fees: the fees of the block
     """
-    # timestamps = []
+    
     def __init__(self, index, previous_hash, capacity):
         self.index = index
         
         self.timestamp = float(timer())
-        print("--BLOCK ",self.index, "WAS BORN ", datetime.now())
+        # print("--BLOCK ",self.index, "WAS BORN ", datetime.now())
         self.transactions = []
         self.validator = None
         self.previous_hash = previous_hash
